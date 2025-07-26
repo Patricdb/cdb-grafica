@@ -1,0 +1,482 @@
+<?php
+// inc/grafica-bar.php
+
+// ------------------------------------------------------------------
+// 1. Registrar el bloque de gráfica "bar".
+// ------------------------------------------------------------------
+function registrar_bloque_grafica_bar() {
+    $asset_file = plugin_dir_path(dirname(__FILE__)) . 'build/bar/index.asset.php';
+
+    if (!file_exists($asset_file)) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('Archivo index.asset.php para bar no encontrado.');
+        }
+        return;
+    }
+
+    $asset_data = include $asset_file;
+    if (
+        !isset($asset_data['dependencies']) 
+        || !is_array($asset_data['dependencies']) 
+        || !isset($asset_data['version'])
+    ) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('index.asset.php para bar tiene una estructura inválida.');
+        }
+        return;
+    }
+
+    $script_url = plugins_url('build/bar/index.js', dirname(__FILE__)) . '?v=' . time();
+    wp_register_script(
+        'cdb-grafica-bar',
+        $script_url,
+        $asset_data['dependencies'],
+        $asset_data['version'],
+        true
+    );
+
+    register_block_type('cdb/grafica-bar', array(
+        'editor_script'   => 'cdb-grafica-bar',
+        'render_callback' => 'renderizar_bloque_grafica_bar',
+    ));
+}
+add_action('init', 'registrar_bloque_grafica_bar');
+
+// ------------------------------------------------------------------
+// 2. Render callback: se calcula la gráfica y se almacena la puntuación total.
+// ------------------------------------------------------------------
+function renderizar_bloque_grafica_bar($attributes, $content) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'grafica_bar_results';
+    $post_id    = get_the_ID();
+
+    // Recuperar todas las experiencias para este bar desde wp_cdb_experiencia
+$results = $wpdb->get_results($wpdb->prepare("
+    SELECT * FROM $table_name WHERE post_id = %d
+", $post_id));
+
+    // Inicializar grupos
+    $grupos = [
+        'DIB' => [
+            'relacion_superiores'
+        ],
+        'COE' => [
+            'salario'
+        ],
+        'EDT' => [
+            'espacio_seguro'
+        ],
+        'COL' => [
+            'turnos_justos'
+        ],
+        'EQU' => [
+            'motivacion'
+        ],
+        'ALB' => [
+            'bienvenida'
+        ],
+        'DPF' => [
+            'formacion'
+        ],
+        'CLI' => [
+            'reputacion'
+        ]
+    ];
+
+    // Etiquetas de la gráfica
+    $etiquetas_grafica = array_keys($grupos);
+
+    // Calcular promedios
+    $promedios = [];
+    foreach ($grupos as $grupo_nombre => $campos) {
+        $total_grupo = 0;
+        $count       = 0;
+        foreach ($results as $row) {
+            foreach ($campos as $campo) {
+                if (isset($row->$campo)) {
+                    $total_grupo += $row->$campo;
+                    $count++;
+                }
+            }
+        }
+        $promedios[] = $count > 0 ? round($total_grupo / $count, 1) : 0;
+    }
+
+    // Calcular total
+    $total = round(array_sum($promedios), 1);
+
+    // Guardar en meta si es un bar
+    if ($post_id && get_post_type($post_id) === 'bar') {
+        update_post_meta($post_id, 'cdb_puntuacion_total', $total);
+    }
+
+    // Datos para el frontend
+    $data = [
+        'labels'    => $etiquetas_grafica,
+        'promedios' => $promedios,
+        'total'     => $total,
+    ];
+
+    // Atributos por defecto
+    $attributes['backgroundColor'] = $attributes['backgroundColor'] ?? 'rgba(0, 0, 0, 0.2)';
+    $attributes['borderColor']     = $attributes['borderColor'] ?? 'rgba(0, 0, 0, 1)';
+
+    ob_start();
+    ?>
+    <div id="grafica-bar" 
+         data-valores="<?php echo esc_attr(wp_json_encode($data)); ?>"
+         data-background-color="<?php echo esc_attr($attributes['backgroundColor']); ?>"
+         data-border-color="<?php echo esc_attr($attributes['borderColor']); ?>">
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+// ------------------------------------------------------------------
+// 3. Generar la gráfica en el frontend.
+// ------------------------------------------------------------------
+function generar_grafica_en_bloque() {
+    ?>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dataElement = document.getElementById('grafica-bar');
+        if (dataElement) {
+            const data = JSON.parse(dataElement.dataset.valores);
+            const ctx  = document.createElement('canvas');
+            dataElement.appendChild(ctx);
+
+            const chartData = {
+                labels: data.labels,
+                datasets: [{
+                    label: `Puntuación Total: ${data.total}`,
+                    data: data.promedios,
+                    backgroundColor: dataElement.dataset.backgroundColor,
+                    borderColor: dataElement.dataset.borderColor,
+                    borderWidth: 2
+                }]
+            };
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    r: {
+                        ticks: { beginAtZero: true, stepSize: 1, max: 10, min: 0 },
+                        suggestedMin: 0,
+                        suggestedMax: 10
+                    }
+                }
+            };
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: chartData,
+                options: options
+            });
+        }
+    });
+    </script>
+    <?php
+}
+add_action('wp_footer', 'generar_grafica_en_bloque');
+
+// ------------------------------------------------------------------
+// 4. Creación de la tabla con dbDelta.
+// ------------------------------------------------------------------
+function grafica_bar_create_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'grafica_bar_results';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id BIGINT(20) NOT NULL AUTO_INCREMENT,
+        post_id BIGINT(20) NOT NULL,
+        user_id BIGINT(20) NOT NULL,
+        relacion_superiores FLOAT NOT NULL,
+        salario FLOAT NOT NULL,
+        espacio_seguro FLOAT NOT NULL,
+        turnos_justos FLOAT NOT NULL,
+        motivacion FLOAT NOT NULL,
+        bienvenida FLOAT NOT NULL,
+        formacion FLOAT NOT NULL,
+        reputacion FLOAT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+// ------------------------------------------------------------------
+// 5. Shortcode "grafica_bar_form": Mostrar formulario o mensaje según rol/relación.
+// ------------------------------------------------------------------
+add_shortcode('grafica_bar_form', function($atts) {
+    $atts = shortcode_atts(['post_id' => get_the_ID()], $atts);
+
+    if (!current_user_can('submit_grafica_bar')) {
+        return '<p>No tienes permisos para enviar resultados.</p>';
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'grafica_bar_results';
+    $user_id    = get_current_user_id();
+    $user       = wp_get_current_user();
+    $roles      = (array) $user->roles;
+    $post_id    = intval($atts['post_id']);
+    $post       = get_post($post_id);
+
+    if (!$post || $post->post_type !== 'bar') {
+        return '<p>Este contenido no es un bar válido.</p>';
+    }
+
+    // Inicialmente, se asume que se puede calificar
+    $puede_calificar = true;
+    $mensaje = '';
+
+    // Reglas:
+    // - Rol Empleador: mostrar formulario (inputs deshabilitados, sin botón)
+    // - Rol Empleado: solo puede calificar si pertenece a un equipo cuyo meta "_cdb_equipo_bar" coincida con el ID del bar.
+    if (in_array('empleador', $roles)) {
+        $puede_calificar = false;
+        $mensaje = ''; // Sin mensaje
+    } else if (in_array('empleado', $roles)) {
+    // 1) Obtener el CPT 'empleado' del usuario
+    $mi_empleado_id = cdb_obtener_empleado_id($user_id);
+    if (!$mi_empleado_id) {
+        $puede_calificar = false;
+        $mensaje = 'No perteneces a ningún equipo de este bar.';
+    } else {
+        // 2) Verificar si existe alguna experiencia en wp_cdb_experiencia
+        //    que vincule a este empleado con el bar (post_id).
+        global $wpdb;
+        $existe_relacion = $wpdb->get_var($wpdb->prepare("
+            SELECT 1
+            FROM wp_cdb_experiencia
+            WHERE empleado_id = %d
+              AND bar_id = %d
+            LIMIT 1
+        ", $mi_empleado_id, $post_id));
+
+        // 3) Si no se encontró ningún registro que vincule empleado y bar,
+        //    no se puede calificar.
+        if (!$existe_relacion) {
+            $puede_calificar = false;
+            $mensaje = 'No perteneces a ningún equipo de este bar.';
+        }
+    }
+}
+
+    // Otros roles sin restricción
+
+    // Obtener datos existentes
+    $existing_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table_name WHERE post_id = %d AND user_id = %d",
+        $post_id,
+        $user_id
+    ), ARRAY_A);
+    
+    // Definir los nombres y descripciones de las características
+    $grupos = [
+        'DIB (Direccion)' => [
+            'relacion_superiores' => [
+                'label' => 'Relación con Superiores', 
+                'descripcion' => 'Relación de los empleados con los supervisores o gerentes.'
+            ],
+        ],
+        'COE (Condiciones Económicas)' => [
+            'salario' => [
+                'label' => 'Salario', 
+                'descripcion' => 'Adecuación del salario a las funciones desempeñadas.'
+            ],
+        ],
+        'EDT (Espacio de trabajo)' => [
+            'espacio_seguro' => [
+                'label' => 'Espacio Seguro', 
+                'descripcion' => 'Percepción general de seguridad en el lugar de trabajo.'
+            ],
+        ],
+        'COL (Condiciones Laborales)' => [
+            'turnos_justos' => [
+                 'label' => 'Turnos Justos', 
+                'descripcion' => 'Distribución equitativa de turnos laborales entre los empleados.'
+            ],
+        ],
+        'EQU (Equipo)' => [
+            'motivacion' => [
+                'label' => 'Motivación', 
+                'descripcion' => 'Capacidad del equipo para mantener la motivación alta.'
+            ],
+        ],
+        'ALB (Ambiente Laboral)' => [
+            'bienvenida' => [
+                'label' => 'Bienvenida', 
+                'descripcion' => 'Valoración sobre cómo se recibe a los nuevos empleados en el equipo.'
+            ],
+        ],
+        'DPF (Desarrollo Profesional)' => [
+            'formacion' => [
+                'label' => 'Formación', 
+                'descripcion' => 'Oportunidades de capacitación y formación profesional.'
+            ],
+        ],
+        'CLI (Clientela)' => [
+            'reputacion' => [
+                'label' => 'Reputación', 
+                'descripcion' => 'Reputación general del lugar frente a los clientes.'
+            ],
+        ],
+    ];
+
+// Encolar estilos y scripts (acordeón, etc.)
+    wp_enqueue_style(
+        'plugin-style',
+        plugins_url('style.css', dirname(__FILE__)),
+        [],
+        time()
+    );
+    wp_enqueue_script(
+        'grafica-bar-form-script',
+        plugins_url('script.js', dirname(__FILE__)),
+        ['jquery'],
+        null,
+        true
+    );
+
+    ob_start();
+
+    // Si es Empleado y no puede calificar, mostrar solo el mensaje y no el formulario
+    if (!$puede_calificar && in_array('empleado', $roles)) {
+        echo '<p style="color:red; font-weight:bold;">' . esc_html($mensaje) . '</p>';
+        return ob_get_clean();
+    }
+
+    // Mostrar el formulario
+    ?>
+    <form method="post" action="">
+        <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+
+        <?php foreach ($grupos as $grupo_nombre => $campos): ?>
+            <div class="accordion">
+                <div class="accordion-header">
+                    <button type="button" class="accordion-toggle">
+                        <?php echo esc_html($grupo_nombre); ?>
+                    </button>
+                </div>
+                <div class="accordion-content" style="display: none;">
+                    <?php foreach ($campos as $campo_slug => $campo_info): 
+                        $valor_existente = isset($existing_data[$campo_slug]) ? $existing_data[$campo_slug] : '';
+                    ?>
+                    <label for="<?php echo esc_attr($campo_slug); ?>">
+                        <strong><?php echo esc_html($campo_info['label']); ?></strong><br>
+                        <em><?php echo esc_html($campo_info['descripcion']); ?></em>
+                    </label>
+                    <input
+                        type="range"
+                        id="<?php echo esc_attr($campo_slug); ?>"
+                        name="<?php echo esc_attr($campo_slug); ?>"
+                        value="<?php echo esc_attr($valor_existente !== '' ? $valor_existente : 0); ?>"
+                        min="0"
+                        max="10"
+                        step="1"
+                        oninput="document.getElementById('<?php echo esc_attr($campo_slug); ?>_output').value = this.value"
+                        <?php 
+                        // Si es Empleador, inhabilitar el control
+                        if (in_array('empleador', $roles)) {
+                            echo 'disabled';
+                        }
+                        ?>
+                    >
+                    <output id="<?php echo esc_attr($campo_slug); ?>_output">
+                        <?php echo esc_html($valor_existente !== '' ? $valor_existente : 0); ?>
+                    </output>
+                    <br>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <?php 
+        // Mostrar botón solo si el rol no es Empleador
+        if (!in_array('empleador', $roles)) : ?>
+            <button type="submit" name="submit_grafica_bar">Enviar</button>
+        <?php endif; ?>
+    </form>
+    <?php
+    return ob_get_clean();
+});
+
+// ------------------------------------------------------------------
+// 6. Procesar el envío del formulario con validaciones repetidas.
+// ------------------------------------------------------------------
+function handle_grafica_bar_submission() {
+    if (isset($_POST['submit_grafica_bar'])) {
+        if (!current_user_can('submit_grafica_bar')) {
+            wp_die('No tienes permisos para realizar esta acción.');
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'grafica_bar_results';
+        $user_id    = get_current_user_id();
+        $user       = wp_get_current_user();
+        $roles      = (array) $user->roles;
+        $post_id    = intval($_POST['post_id']);
+        $post       = get_post($post_id);
+
+        if (!$post || $post->post_type !== 'bar') {
+            wp_die('Bar inválido.');
+        }
+
+        // Para Empleador, impedir envío
+        if (in_array('empleador', $roles)) {
+            wp_die('No puedes enviar calificaciones a un bar como Empleador.');
+        }
+
+ // Para Empleado, verificar pertenencia al bar mediante wp_cdb_experiencia
+if (in_array('empleado', $roles)) {
+    $mi_empleado_id = cdb_obtener_empleado_id($user_id);
+    if (!$mi_empleado_id) {
+        wp_die('No perteneces a ningún equipo de este bar.');
+    }
+
+    // Revisar en wp_cdb_experiencia si el empleado está asociado a este bar
+    $existe_relacion = $wpdb->get_var($wpdb->prepare("
+        SELECT 1
+        FROM wp_cdb_experiencia
+        WHERE empleado_id = %d
+          AND bar_id = %d
+        LIMIT 1
+    ", $mi_empleado_id, $post_id));
+
+    if (!$existe_relacion) {
+        wp_die('No perteneces a ningún equipo de este bar.');
+    }
+}
+
+        // Otros roles sin restricción
+
+        // Preparar datos para insertar o actualizar
+        $data   = ['post_id' => $post_id, 'user_id' => $user_id];
+        $fields = $wpdb->get_col("SHOW COLUMNS FROM $table_name");
+        foreach ($fields as $field) {
+            if (isset($_POST[$field])) {
+                $data[$field] = floatval($_POST[$field]);
+            }
+        }
+
+        $existing_row = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table_name WHERE post_id = %d AND user_id = %d",
+            $post_id,
+            $user_id
+        ));
+
+        if ($existing_row) {
+            $wpdb->update($table_name, $data, ['id' => $existing_row]);
+        } else {
+            $wpdb->insert($table_name, $data);
+        }
+
+        wp_redirect(get_permalink($post_id));
+        exit;
+    }
+}
+add_action('init', 'handle_grafica_bar_submission');

@@ -1,0 +1,66 @@
+/* Estilos para la tabla con acordeón */
+.accordion {
+    margin: 1em 0; /* Margen superior e inferior */
+    border: 1px solid #cdb888;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.accordion-header {
+    background-color: #FAF8EE; /* Fondo blanco */
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #cdb888;
+    color: #000; /* Texto negro */
+    font-weight: bold;
+    border-radius: 5px; /* Bordes redondeados */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
+}
+
+.accordion-header:hover {
+    background-color: #cdb121; /* Fondo más oscuro al pasar el ratón */
+}
+
+.accordion-header .accordion-toggle {
+    all: unset;
+    display: block;
+    font-size: 1.1em;
+    text-align: left;
+}
+
+.accordion-header.open {
+    background-color: #000; /* Fondo negro cuando está abierto */
+    color: #fff; /* Texto blanco cuando está abierto */
+}
+
+.accordion-content {
+    display: none;
+    padding: 15px;
+    background-color: #FAF8EE; /* Fondo blanco */
+}
+
+.accordion-content label {
+    display: block;
+    margin: 0.5em 0;
+}
+
+.accordion-content input {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid #cdb888;
+    border-radius: 3px;
+}
+
+/* Añadir márgenes alrededor del formulario */
+form {
+    margin: 3em auto 2em auto; /* 3em arriba, 2em abajo */
+    max-width: 800px; /* Ancho máximo para centrar el formulario */
+    padding: 1em; /* Espaciado interno */
+    background-color: #FAF8EE; /* Fondo blanco */
+    border: 1px solid #cdb888; /* Borde ligero */
+    border-radius: 5px; /* Bordes redondeados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
