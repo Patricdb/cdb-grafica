@@ -23,7 +23,7 @@ Dentro del menú **CdB Gráfica** se encuentra el submenú **Configurar Colores*
 - **Bar – Color de fondo** y **Bar – Color de borde** definen el aspecto del dataset de bares.
 - **Empleado – Color de fondo** y **Empleado – Color de borde** controlan el dataset de empleados.
 
-Cada selector cuenta con un deslizador *Alpha* que permite ajustar la transparencia del color. Los valores se guardan en formato `rgba`, por lo que puedes elegir tonalidades semitransparentes que se aplicarán directamente en las gráficas.
+Junto a cada selector de color hay un campo *Alpha* para introducir un valor entre `0` y `1`. Este número controla la transparencia aplicada al color. El plugin combina ambos valores internamente para generar el código `rgba` necesario en las gráficas.
 
 Al guardar los cambios, los nuevos valores se aplican automáticamente a las gráficas del sitio. El color de borde también se utiliza para los *ticks* de la escala, por lo que puedes ajustar su tonalidad desde esta misma pantalla.
 
