@@ -267,7 +267,7 @@ add_shortcode('grafica_bar_form', function($atts) {
     if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
         $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
     } else {
-        return;
+        return '<p>' . esc_html__( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' ) . '</p>';
     }
     if (!$mi_empleado_id) {
         $puede_calificar = false;
@@ -471,7 +471,7 @@ if (in_array('empleado', $roles)) {
     if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
         $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
     } else {
-        return;
+        return '<p>' . esc_html__( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' ) . '</p>';
     }
     if (!$mi_empleado_id) {
         wp_die( esc_html__( 'No perteneces a ningún equipo de este bar.', 'cdb-grafica' ) );
