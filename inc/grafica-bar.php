@@ -350,7 +350,7 @@ add_shortcode('grafica_bar_form', function($atts) {
 // Encolar estilos y scripts (acordeón, etc.)
     $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';
     wp_enqueue_style(
-        'plugin-style',
+        'cdb-grafica-bar-style',
         plugins_url('style.css', dirname(__FILE__)),
         [],
         filemtime($style_path)
