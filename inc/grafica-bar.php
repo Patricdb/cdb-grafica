@@ -26,12 +26,13 @@ function registrar_bloque_grafica_bar() {
         return;
     }
 
-    $script_url = plugins_url('build/bar/index.js', dirname(__FILE__)) . '?v=' . time();
+    $script_path = plugin_dir_path(dirname(__FILE__)) . 'build/bar/index.js';
+    $script_url  = plugins_url('build/bar/index.js', dirname(__FILE__));
     wp_register_script(
         'cdb-grafica-bar',
         $script_url,
         $asset_data['dependencies'],
-        $asset_data['version'],
+        filemtime($script_path),
         true
     );
 
@@ -214,7 +215,7 @@ add_shortcode('grafica_bar_form', function($atts) {
     $atts = shortcode_atts(['post_id' => get_the_ID()], $atts);
 
     if (!current_user_can('submit_grafica_bar')) {
-        return '<p>No tienes permisos para enviar resultados.</p>';
+        return '<p>' . esc_html__( 'No tienes permisos para enviar resultados.', 'cdb-grafica' ) . '</p>';
     }
 
     global $wpdb;
@@ -226,7 +227,7 @@ add_shortcode('grafica_bar_form', function($atts) {
     $post       = get_post($post_id);
 
     if (!$post || $post->post_type !== 'bar') {
-        return '<p>Este contenido no es un bar válido.</p>';
+        return '<p>' . esc_html__( 'Este contenido no es un bar válido.', 'cdb-grafica' ) . '</p>';
     }
 
     // Inicialmente, se asume que se puede calificar
@@ -328,17 +329,19 @@ add_shortcode('grafica_bar_form', function($atts) {
     ];
 
 // Encolar estilos y scripts (acordeón, etc.)
+    $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';
     wp_enqueue_style(
         'plugin-style',
         plugins_url('style.css', dirname(__FILE__)),
         [],
-        time()
+        filemtime($style_path)
     );
+    $script_form_path = plugin_dir_path(dirname(__FILE__)) . 'script.js';
     wp_enqueue_script(
         'grafica-bar-form-script',
         plugins_url('script.js', dirname(__FILE__)),
         ['jquery'],
-        null,
+        filemtime($script_form_path),
         true
     );
 
@@ -354,6 +357,7 @@ add_shortcode('grafica_bar_form', function($atts) {
     ?>
     <form method="post" action="">
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+        <?php wp_nonce_field('submit_grafica_bar', 'grafica_bar_nonce'); ?>
 
         <?php foreach ($grupos as $grupo_nombre => $campos): ?>
             <div class="accordion">
@@ -406,12 +410,17 @@ add_shortcode('grafica_bar_form', function($atts) {
 });
 
 // ------------------------------------------------------------------
-// 6. Procesar el envío del formulario con validaciones repetidas.
+// 6. Procesar el envío del formulario "grafica_bar_form".
+//    Valida roles y guarda o actualiza la puntuación en la tabla
+//    personalizada para el bar actual.
 // ------------------------------------------------------------------
 function handle_grafica_bar_submission() {
     if (isset($_POST['submit_grafica_bar'])) {
+        if (!isset($_POST['grafica_bar_nonce']) || !wp_verify_nonce($_POST['grafica_bar_nonce'], 'submit_grafica_bar')) {
+            wp_die( esc_html__( 'Nonce inválido.', 'cdb-grafica' ) );
+        }
         if (!current_user_can('submit_grafica_bar')) {
-            wp_die('No tienes permisos para realizar esta acción.');
+            wp_die( esc_html__( 'No tienes permisos para realizar esta acción.', 'cdb-grafica' ) );
         }
 
         global $wpdb;
@@ -423,19 +432,19 @@ function handle_grafica_bar_submission() {
         $post       = get_post($post_id);
 
         if (!$post || $post->post_type !== 'bar') {
-            wp_die('Bar inválido.');
+            wp_die( esc_html__( 'Bar inválido.', 'cdb-grafica' ) );
         }
 
         // Para Empleador, impedir envío
         if (in_array('empleador', $roles)) {
-            wp_die('No puedes enviar calificaciones a un bar como Empleador.');
+            wp_die( esc_html__( 'No puedes enviar calificaciones a un bar como Empleador.', 'cdb-grafica' ) );
         }
 
  // Para Empleado, verificar pertenencia al bar mediante wp_cdb_experiencia
 if (in_array('empleado', $roles)) {
     $mi_empleado_id = cdb_obtener_empleado_id($user_id);
     if (!$mi_empleado_id) {
-        wp_die('No perteneces a ningún equipo de este bar.');
+        wp_die( esc_html__( 'No perteneces a ningún equipo de este bar.', 'cdb-grafica' ) );
     }
 
     // Revisar en wp_cdb_experiencia si el empleado está asociado a este bar
@@ -448,7 +457,7 @@ if (in_array('empleado', $roles)) {
     ", $mi_empleado_id, $post_id));
 
     if (!$existe_relacion) {
-        wp_die('No perteneces a ningún equipo de este bar.');
+        wp_die( esc_html__( 'No perteneces a ningún equipo de este bar.', 'cdb-grafica' ) );
     }
 }
 

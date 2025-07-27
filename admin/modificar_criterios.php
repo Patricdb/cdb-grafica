@@ -38,7 +38,7 @@ add_action('admin_menu', 'cdb_grafica_modificar_criterios_menu');
 
 // Página de modificación de criterios con pestañas
 function cdb_grafica_modificar_criterios_page() {
-    $tab = isset($_GET['tab']) ? $_GET['tab'] : 'bar';
+    $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'bar';
     $criterios = cdb_grafica_get_criterios_organizados($tab);
     ?>
     <div class="wrap">
