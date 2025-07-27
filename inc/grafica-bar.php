@@ -497,6 +497,9 @@ if (in_array('empleado', $roles)) {
         $data   = ['post_id' => $post_id, 'user_id' => $user_id];
         $fields = $wpdb->get_col("SHOW COLUMNS FROM $table_name");
         foreach ($fields as $field) {
+            if ($field === 'id' || $field === 'created_at') {
+                continue; // Ignore auto fields
+            }
             if (isset($_POST[$field])) {
                 $data[$field] = floatval($_POST[$field]);
             }
