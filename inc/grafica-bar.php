@@ -119,9 +119,14 @@ $results = $wpdb->get_results($wpdb->prepare("
         'total'     => $total,
     ];
 
-    // Atributos por defecto
-    $attributes['backgroundColor'] = $attributes['backgroundColor'] ?? 'rgba(0, 0, 0, 0.2)';
-    $attributes['borderColor']     = $attributes['borderColor'] ?? 'rgba(0, 0, 0, 1)';
+    // Obtener colores configurados
+    $defaults = [
+        'bar_background'      => 'rgba(75, 192, 192, 0.2)',
+        'bar_border'          => 'rgba(75, 192, 192, 1)'
+    ];
+    $opts     = get_option('cdb_grafica_colores', $defaults);
+    $attributes['backgroundColor'] = $opts['bar_background'] ?? $defaults['bar_background'];
+    $attributes['borderColor']     = $opts['bar_border'] ?? $defaults['bar_border'];
 
     ob_start();
     ?>
