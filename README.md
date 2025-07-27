@@ -16,6 +16,15 @@ Al activarlo se crearán automáticamente las tablas personalizadas donde se alm
 
 Si se deja un criterio sin valorar, la puntuación guardada es 0 y no se tendrá en cuenta para el promedio final.
 
+## Configurar Colores
+
+Dentro del menú **CdB Gráfica** se encuentra el submenú **Configurar Colores**. Desde esta página puedes modificar los colores utilizados en las gráficas:
+
+- **Bar – Color de fondo** y **Bar – Color de borde** definen el aspecto del dataset de bares.
+- **Empleado – Color de fondo** y **Empleado – Color de borde** controlan el dataset de empleados.
+
+Al guardar los cambios, los nuevos valores se aplican automáticamente a las gráficas del sitio. El color de borde también se utiliza para los *ticks* de la escala, por lo que puedes ajustar su tonalidad desde esta misma pantalla.
+
 ## Desinstalación
 
 Al desinstalar el plugin se eliminan las tablas creadas para almacenar los resultados.
