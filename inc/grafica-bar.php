@@ -1,6 +1,21 @@
 <?php
 // inc/grafica-bar.php
 
+function cdb_hex_to_rgba($hex, $alpha = 1) {
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) === 3) {
+        $hex = preg_replace('/(.)/', '$1$1', $hex);
+    }
+    if (strlen($hex) !== 6) {
+        return 'rgba(0,0,0,' . $alpha . ')';
+    }
+    $int = hexdec($hex);
+    $r = ($int >> 16) & 255;
+    $g = ($int >> 8) & 255;
+    $b = $int & 255;
+    return sprintf('rgba(%d, %d, %d, %s)', $r, $g, $b, $alpha);
+}
+
 // ------------------------------------------------------------------
 // 1. Registrar el bloque de gráfica "bar".
 // ------------------------------------------------------------------
@@ -121,16 +136,22 @@ $results = $wpdb->get_results($wpdb->prepare("
 
     // Obtener colores configurados
     $defaults = [
-        'bar_background'      => 'rgba(75, 192, 192, 0.2)',
-        'bar_border'          => 'rgba(75, 192, 192, 1)',
-        'ticks_color'         => '#666666',
-        'ticks_backdrop'      => ''
+        'bar_background'           => '#4bc0c0',
+        'bar_background_alpha'     => 0.2,
+        'bar_border'               => '#4bc0c0',
+        'bar_border_alpha'         => 1,
+        'ticks_color'              => '#666666',
+        'ticks_color_alpha'        => 1,
+        'ticks_backdrop'           => '',
+        'ticks_backdrop_alpha'     => 1,
     ];
-    $opts     = get_option('cdb_grafica_colores', $defaults);
-    $attributes['backgroundColor']   = $opts['bar_background'] ?? $defaults['bar_background'];
-    $attributes['borderColor']       = $opts['bar_border'] ?? $defaults['bar_border'];
-    $attributes['ticksColor']        = $opts['ticks_color'] ?? $defaults['ticks_color'];
-    $attributes['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults['ticks_backdrop'];
+    $opts = get_option('cdb_grafica_colores', []);
+    $opts = wp_parse_args($opts, $defaults);
+
+    $attributes['backgroundColor']   = cdb_hex_to_rgba($opts['bar_background'], $opts['bar_background_alpha']);
+    $attributes['borderColor']       = cdb_hex_to_rgba($opts['bar_border'], $opts['bar_border_alpha']);
+    $attributes['ticksColor']        = cdb_hex_to_rgba($opts['ticks_color'], $opts['ticks_color_alpha']);
+    $attributes['ticksBackdropColor'] = $opts['ticks_backdrop'] === '' ? '' : cdb_hex_to_rgba($opts['ticks_backdrop'], $opts['ticks_backdrop_alpha']);
 
     ob_start();
     ?>
