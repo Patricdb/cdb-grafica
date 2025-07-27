@@ -60,7 +60,7 @@ function cdb_grafica_modificar_criterios_page() {
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Modificar Criterios', 'cdb-grafica' ); ?></h1>
-        <p><?php esc_html_e( 'Edita los nombres visibles y descripciones de los criterios. Los slugs internos no pueden modificarse.', 'cdb-grafica' ); ?></p>
+        <p><?php esc_html_e( 'Edita los nombres visibles y descripciones de los criterios. El slug se vincula con columnas de la base de datos, por lo que no deberías cambiarlo sin razón. "Orden" controla la secuencia de aparición en la tabla de calificación.', 'cdb-grafica' ); ?></p>
         <h2 class="nav-tab-wrapper">
             <a href="?page=cdb_modificar_criterios&tab=bar" class="nav-tab <?php echo ($tab == 'bar') ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Bar', 'cdb-grafica' ); ?></a>
             <a href="?page=cdb_modificar_criterios&tab=empleado" class="nav-tab <?php echo ($tab == 'empleado') ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Empleado', 'cdb-grafica' ); ?></a>
