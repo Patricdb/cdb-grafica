@@ -38,6 +38,23 @@ function cdb_grafica_colores_page() {
 
     wp_enqueue_style('wp-color-picker');
     wp_enqueue_script('wp-color-picker');
+
+    $alpha_css_path = plugin_dir_path(__FILE__) . 'color-picker-alpha.css';
+    wp_enqueue_style(
+        'cdb-color-picker-alpha',
+        plugins_url('admin/color-picker-alpha.css', dirname(__FILE__)),
+        ['wp-color-picker'],
+        filemtime($alpha_css_path)
+    );
+
+    $alpha_js_path = plugin_dir_path(__FILE__) . 'color-picker-alpha.js';
+    wp_enqueue_script(
+        'cdb-color-picker-alpha',
+        plugins_url('admin/color-picker-alpha.js', dirname(__FILE__)),
+        ['wp-color-picker', 'jquery', 'jquery-ui-slider'],
+        filemtime($alpha_js_path),
+        true
+    );
     ?>
     <div class="wrap">
         <h1>Configurar Colores</h1>
@@ -74,7 +91,7 @@ function cdb_grafica_colores_page() {
     </div>
     <script>
     jQuery(document).ready(function($){
-        $('.cdb-color-field').wpColorPicker();
+        $('.cdb-color-field').cdbColorPickerAlpha({alpha: true});
     });
     </script>
     <?php
