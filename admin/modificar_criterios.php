@@ -102,6 +102,23 @@ function cdb_grafica_modificar_criterios_page() {
                 </button>
             </p>
         </form>
+
+        <h2><?php esc_html_e( 'Vista previa de criterios', 'cdb-grafica' ); ?></h2>
+        <table class="widefat fixed" style="max-width:800px">
+            <tbody>
+            <?php $vista = cdb_grafica_get_criterios_organizados( $tab ); ?>
+            <?php foreach ( $vista as $grupo_nombre => $lista ) : ?>
+                <tr>
+                    <th colspan="2"><?php echo esc_html( $grupo_nombre ); ?></th>
+                </tr>
+                <?php foreach ( $lista as $etiqueta ) : ?>
+                    <tr>
+                        <td style="padding-left:20px;"><?php echo esc_html( $etiqueta ); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
     <?php
 }
