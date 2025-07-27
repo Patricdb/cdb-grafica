@@ -94,7 +94,8 @@ $results = $wpdb->get_results($wpdb->prepare("
         $count       = 0;
         foreach ($results as $row) {
             foreach ($campos as $campo) {
-                if (isset($row->$campo)) {
+                // Un valor 0 indica que el criterio no fue valorado y se ignora
+                if (isset($row->$campo) && $row->$campo != 0) {
                     $total_grupo += $row->$campo;
                     $count++;
                 }

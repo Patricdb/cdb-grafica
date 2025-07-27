@@ -14,6 +14,8 @@ Al activarlo se crearán automáticamente las tablas personalizadas donde se alm
 - Utiliza los shortcodes `[grafica_bar_form]` y `[grafica_empleado_form]` para mostrar los formularios de valoración.
 - Inserta los bloques "Gráfica Bar" o "Gráfica Empleado" en el editor para visualizar los promedios.
 
+Si se deja un criterio sin valorar, la puntuación guardada es 0 y no se tendrá en cuenta para el promedio final.
+
 ## Desinstalación
 
 Al desinstalar el plugin se eliminan las tablas creadas para almacenar los resultados.

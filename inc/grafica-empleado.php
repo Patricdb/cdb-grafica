@@ -69,7 +69,8 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         $count = 0;
         foreach ($results as $row) {
             foreach ($campos as $campo) {
-                if (isset($row->$campo)) {
+                // Un valor 0 significa que el criterio se dejó en blanco y no cuenta
+                if (isset($row->$campo) && $row->$campo != 0) {
                     $total_grupo += $row->$campo;
                     $count++;
                 }
