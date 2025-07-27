@@ -94,9 +94,14 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         'total'     => $total,
     ];
 
-    // Atributos por defecto
-    $attributes['backgroundColor'] = $attributes['backgroundColor'] ?? 'rgba(0, 0, 0, 0.2)';
-    $attributes['borderColor']     = $attributes['borderColor'] ?? 'rgba(0, 0, 0, 1)';
+    // Obtener colores configurados
+    $defaults = [
+        'empleado_background' => 'rgba(75, 192, 192, 0.2)',
+        'empleado_border'     => 'rgba(75, 192, 192, 1)'
+    ];
+    $opts     = get_option('cdb_grafica_colores', $defaults);
+    $attributes['backgroundColor'] = $opts['empleado_background'] ?? $defaults['empleado_background'];
+    $attributes['borderColor']     = $opts['empleado_border'] ?? $defaults['empleado_border'];
 
     ob_start();
     ?>

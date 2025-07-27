@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 {
                     label: `Puntuación Total: ${data.total.toFixed(1)}`, // Limitar a 1 decimal
                     data: data.promedios,
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    borderColor: "rgba(75, 192, 192, 1)",
+                    backgroundColor: graficaBarElement.dataset.backgroundColor || "rgba(75, 192, 192, 0.2)",
+                    borderColor: graficaBarElement.dataset.borderColor || "rgba(75, 192, 192, 1)",
                     borderWidth: 2,
                 },
             ],
