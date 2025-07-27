@@ -8,6 +8,10 @@
  * Text Domain: cdb-grafica
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
 // Versión actual del plugin
 define('CDB_GRAFICA_VERSION', '1.0.0');
 

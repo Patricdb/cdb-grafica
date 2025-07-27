@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 // inc/grafica-empleado.php
 
 // ------------------------------------------------------------------
