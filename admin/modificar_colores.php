@@ -94,10 +94,6 @@ function cdb_grafica_colores_page() {
             <?php submit_button(); ?>
         </form>
     </div>
-    <script>
-    jQuery(document).ready(function($){
-        $('.cdb-color-field').rgbaColorPicker();
-    });
-    </script>
     <?php
+    // La inicialización de '.cdb-color-field' se realiza en rgba-color-picker.js
 }
