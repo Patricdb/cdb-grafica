@@ -2,8 +2,8 @@
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
-        'CdB Gráfica',
-        'CdB Gráfica',
+        __( 'CdB Gráfica', 'cdb-grafica' ),
+        __( 'CdB Gráfica', 'cdb-grafica' ),
         'manage_options',
         'cdb_grafica_menu',
         'cdb_grafica_dashboard_page',
@@ -17,8 +17,8 @@ add_action('admin_menu', 'cdb_grafica_menu');
 function cdb_grafica_dashboard_page() {
     ?>
     <div class="wrap">
-        <h1>Bienvenido a CdB Gráfica</h1>
-        <p>Desde este panel puedes gestionar las gráficas y modificar los criterios evaluativos.</p>
+        <h1><?php esc_html_e( 'Bienvenido a CdB Gráfica', 'cdb-grafica' ); ?></h1>
+        <p><?php esc_html_e( 'Desde este panel puedes gestionar las gráficas y modificar los criterios evaluativos.', 'cdb-grafica' ); ?></p>
     </div>
     <?php
 }
@@ -27,8 +27,8 @@ function cdb_grafica_dashboard_page() {
 function cdb_grafica_modificar_criterios_menu() {
     add_submenu_page(
         'cdb_grafica_menu',
-        'Modificar Criterios',
-        'Modificar Criterios',
+        __( 'Modificar Criterios', 'cdb-grafica' ),
+        __( 'Modificar Criterios', 'cdb-grafica' ),
         'manage_options',
         'cdb_modificar_criterios',
         'cdb_grafica_modificar_criterios_page'
@@ -42,22 +42,22 @@ function cdb_grafica_modificar_criterios_page() {
     $criterios = cdb_grafica_get_criterios_organizados($tab);
     ?>
     <div class="wrap">
-        <h1>Modificar Criterios</h1>
+        <h1><?php esc_html_e( 'Modificar Criterios', 'cdb-grafica' ); ?></h1>
         <h2 class="nav-tab-wrapper">
-            <a href="?page=cdb_modificar_criterios&tab=bar" class="nav-tab <?php echo ($tab == 'bar') ? 'nav-tab-active' : ''; ?>">Bar</a>
-            <a href="?page=cdb_modificar_criterios&tab=empleado" class="nav-tab <?php echo ($tab == 'empleado') ? 'nav-tab-active' : ''; ?>">Empleado</a>
+            <a href="?page=cdb_modificar_criterios&tab=bar" class="nav-tab <?php echo ($tab == 'bar') ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Bar', 'cdb-grafica' ); ?></a>
+            <a href="?page=cdb_modificar_criterios&tab=empleado" class="nav-tab <?php echo ($tab == 'empleado') ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Empleado', 'cdb-grafica' ); ?></a>
         </h2>
         <form method="post" action="">
             <table class="form-table">
                 <tr>
-                    <th><label for="criterio_actual">Criterio a Reemplazar:</label></th>
+                    <th><label for="criterio_actual"><?php esc_html_e( 'Criterio a Reemplazar:', 'cdb-grafica' ); ?></label></th>
                     <td>
                         <select name="criterio_actual" id="criterio_actual">
                             <?php foreach ($criterios as $grupo => $items) { ?>
-                                <optgroup label="<?php echo esc_attr($grupo); ?>">
+                                <optgroup label="<?php echo esc_attr__( $grupo, 'cdb-grafica' ); ?>">
                                     <?php foreach ($items as $criterio) { ?>
-                                        <option value="<?php echo esc_attr($criterio); ?>">
-                                            <?php echo esc_html($criterio); ?>
+                                        <option value="<?php echo esc_attr( $criterio ); ?>">
+                                            <?php echo esc_html__( $criterio, 'cdb-grafica' ); ?>
                                         </option>
                                     <?php } ?>
                                 </optgroup>
