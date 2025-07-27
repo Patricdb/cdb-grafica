@@ -122,18 +122,24 @@ $results = $wpdb->get_results($wpdb->prepare("
     // Obtener colores configurados
     $defaults = [
         'bar_background'      => 'rgba(75, 192, 192, 0.2)',
-        'bar_border'          => 'rgba(75, 192, 192, 1)'
+        'bar_border'          => 'rgba(75, 192, 192, 1)',
+        'ticks_color'         => '#666666',
+        'ticks_backdrop'      => ''
     ];
     $opts     = get_option('cdb_grafica_colores', $defaults);
-    $attributes['backgroundColor'] = $opts['bar_background'] ?? $defaults['bar_background'];
-    $attributes['borderColor']     = $opts['bar_border'] ?? $defaults['bar_border'];
+    $attributes['backgroundColor']   = $opts['bar_background'] ?? $defaults['bar_background'];
+    $attributes['borderColor']       = $opts['bar_border'] ?? $defaults['bar_border'];
+    $attributes['ticksColor']        = $opts['ticks_color'] ?? $defaults['ticks_color'];
+    $attributes['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults['ticks_backdrop'];
 
     ob_start();
     ?>
-    <div id="grafica-bar" 
+    <div id="grafica-bar"
          data-valores="<?php echo esc_attr(wp_json_encode($data)); ?>"
          data-background-color="<?php echo esc_attr($attributes['backgroundColor']); ?>"
-         data-border-color="<?php echo esc_attr($attributes['borderColor']); ?>">
+         data-border-color="<?php echo esc_attr($attributes['borderColor']); ?>"
+         data-ticks-color="<?php echo esc_attr($attributes['ticksColor']); ?>"
+         data-ticks-backdrop-color="<?php echo esc_attr($attributes['ticksBackdropColor']); ?>">
     </div>
     <?php
     return ob_get_clean();
@@ -168,7 +174,14 @@ function generar_grafica_en_bloque() {
                 plugins: { legend: { display: true } },
                 scales: {
                     r: {
-                        ticks: { beginAtZero: true, stepSize: 1, max: 10, min: 0 },
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: 1,
+                            max: 10,
+                            min: 0,
+                            color: dataElement.dataset.ticksColor,
+                            backdropColor: dataElement.dataset.ticksBackdropColor || undefined
+                        },
                         suggestedMin: 0,
                         suggestedMax: 10
                     }

@@ -58,7 +58,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 scales: {
                     r: {
-                        ticks: { beginAtZero: true, stepSize: 1, max: 10, min: 0 },
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: 1,
+                            max: 10,
+                            min: 0,
+                            color: graficaEmpleadoElement.dataset.ticksColor || '#666',
+                            backdropColor: graficaEmpleadoElement.dataset.ticksBackdropColor || undefined,
+                        },
                     },
                 },
             },
