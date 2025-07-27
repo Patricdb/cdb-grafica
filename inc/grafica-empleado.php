@@ -53,8 +53,17 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         $post_id
     ));
 
-    // Obtener grupos y criterios definitivos
-    $grupos = cdb_get_empleado_criterios();
+    // Inicializar agrupaciones para calcular promedios
+    $grupos = [
+        'DIE' => ['direccion'],
+        'SAL' => ['camarero'],
+        'TES' => ['venta'],
+        'ATC' => ['satisfaccion'],
+        'TEQ' => ['cooperacion'],
+        'ORL' => ['orden'],
+        'TEC' => ['cocina_local'],
+        'COC' => ['cocinero']
+    ];
 
     // Calcular promedios por grupo
     $promedios = [];

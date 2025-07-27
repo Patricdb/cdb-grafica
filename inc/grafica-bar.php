@@ -59,8 +59,33 @@ $results = $wpdb->get_results($wpdb->prepare("
     SELECT * FROM $table_name WHERE post_id = %d
 ", $post_id));
 
-    // Obtener grupos y criterios definitivos
-    $grupos = cdb_get_bar_criterios();
+    // Inicializar grupos
+    $grupos = [
+        'DIB' => [
+            'relacion_superiores'
+        ],
+        'COE' => [
+            'salario'
+        ],
+        'EDT' => [
+            'espacio_seguro'
+        ],
+        'COL' => [
+            'turnos_justos'
+        ],
+        'EQU' => [
+            'motivacion'
+        ],
+        'ALB' => [
+            'bienvenida'
+        ],
+        'DPF' => [
+            'formacion'
+        ],
+        'CLI' => [
+            'reputacion'
+        ]
+    ];
 
     // Etiquetas de la gráfica
     $etiquetas_grafica = array_keys($grupos);
