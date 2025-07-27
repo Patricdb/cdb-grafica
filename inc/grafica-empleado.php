@@ -255,8 +255,8 @@ if (in_array('empleado', $roles)) {
             // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
             $existe_equipo_compartido = $wpdb->get_var($wpdb->prepare("
                 SELECT 1
-                FROM wp_cdb_experiencia e1
-                JOIN wp_cdb_experiencia e2 
+                FROM {$wpdb->prefix}cdb_experiencia e1
+                JOIN {$wpdb->prefix}cdb_experiencia e2 
                       ON e1.equipo_id = e2.equipo_id
                 WHERE e1.empleado_id = %d
                   AND e2.empleado_id = %d
@@ -293,7 +293,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
         // ¿El empleado (post_id) tiene experiencia en alguno de esos bares?
         $existe_relacion = $wpdb->get_var($wpdb->prepare("
             SELECT 1
-            FROM wp_cdb_experiencia
+            FROM {$wpdb->prefix}cdb_experiencia
             WHERE empleado_id = %d
               AND bar_id IN ($in_bares)
             LIMIT 1
@@ -463,8 +463,8 @@ if (in_array('empleado', $roles)) {
     // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
     $existe_equipo_compartido = $wpdb->get_var($wpdb->prepare("
         SELECT 1
-        FROM wp_cdb_experiencia e1
-        JOIN wp_cdb_experiencia e2 
+        FROM {$wpdb->prefix}cdb_experiencia e1
+        JOIN {$wpdb->prefix}cdb_experiencia e2 
               ON e1.equipo_id = e2.equipo_id
         WHERE e1.empleado_id = %d
           AND e2.empleado_id = %d
@@ -495,7 +495,7 @@ if (in_array('empleador', $roles)) {
 
         $existe_relacion = $wpdb->get_var($wpdb->prepare("
             SELECT 1
-            FROM wp_cdb_experiencia
+            FROM {$wpdb->prefix}cdb_experiencia
             WHERE empleado_id = %d
               AND bar_id IN ($in_bares)
             LIMIT 1

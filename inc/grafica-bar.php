@@ -278,7 +278,7 @@ add_shortcode('grafica_bar_form', function($atts) {
         global $wpdb;
         $existe_relacion = $wpdb->get_var($wpdb->prepare("
             SELECT 1
-            FROM wp_cdb_experiencia
+            FROM {$wpdb->prefix}cdb_experiencia
             WHERE empleado_id = %d
               AND bar_id = %d
             LIMIT 1
@@ -480,7 +480,7 @@ if (in_array('empleado', $roles)) {
     // Revisar en wp_cdb_experiencia si el empleado está asociado a este bar
     $existe_relacion = $wpdb->get_var($wpdb->prepare("
         SELECT 1
-        FROM wp_cdb_experiencia
+        FROM {$wpdb->prefix}cdb_experiencia
         WHERE empleado_id = %d
           AND bar_id = %d
         LIMIT 1
