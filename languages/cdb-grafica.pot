@@ -148,3 +148,9 @@ msgstr ""
 #: cdb-grafica.php:74
 msgid "No se encontraron datos."
 msgstr ""
+#: admin/modificar_criterios.php:63
+msgid ""
+"Edita los nombres visibles y descripciones de los criterios. El slug se vincula "
+"con columnas de la base de datos, por lo que no deberías cambiarlo sin razón. "
+"\"Orden\" controla la secuencia de aparición en la tabla de calificación."
+msgstr ""
