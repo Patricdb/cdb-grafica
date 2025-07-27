@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+require_once plugin_dir_path( __FILE__ ) . 'shared-functions.php';
 // inc/grafica-empleado.php
 
 // ------------------------------------------------------------------
@@ -53,17 +54,8 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         $post_id
     ));
 
-    // Inicializar agrupaciones para calcular promedios
-    $grupos = [
-        'DIE' => ['direccion'],
-        'SAL' => ['camarero'],
-        'TES' => ['venta'],
-        'ATC' => ['satisfaccion'],
-        'TEQ' => ['cooperacion'],
-        'ORL' => ['orden'],
-        'TEC' => ['cocina_local'],
-        'COC' => ['cocinero']
-    ];
+    // Inicializar agrupaciones para calcular promedios desde las opciones
+    $grupos = cdb_grafica_get_criterios_organizados( 'empleado' );
 
     // Calcular promedios por grupo
     $promedios = [];
@@ -71,7 +63,7 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         $total_grupo = 0;
         $count = 0;
         foreach ($results as $row) {
-            foreach ($campos as $campo) {
+            foreach ( array_keys( $campos ) as $campo ) {
                 // Un valor 0 significa que el criterio se dejó en blanco y no cuenta
                 if (isset($row->$campo) && $row->$campo != 0) {
                     $total_grupo += $row->$campo;
@@ -315,32 +307,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
     ), ARRAY_A);
 
     // Definir los nombres y descripciones de las características
-    $grupos = [
-        'DIE (Dirección)' => [
-            'direccion'     => ['label' => 'Dirección',     'descripcion' => 'Guiar al equipo hacia los objetivos comunes.'],
-        ],
-        'SAL (Sala)' => [
-            'camarero'          => ['label' => 'Camarero',                'descripcion' => 'Atender y servir a los clientes en sala.'],
-        ],
-        'TES (Técnica Sala)' => [
-            'venta'        => ['label' => 'Venta',       'descripcion' => 'Capacidades comerciales de venta.'],
-        ],
-        'ATC (Atención al Cliente)' => [
-            'satisfaccion'    => ['label' => 'Satisfacción', 'descripcion' => 'Garantizar una experiencia positiva para el cliente.'],
-        ],
-        'TEQ (Trabajo en Equipo)' => [
-            'cooperacion'   => ['label' => 'Cooperación', 'descripcion' => 'Colaborar para lograr objetivos comunes.'],
-        ],
-        'ORL (Orden y Limpieza)' => [
-            'orden'            => ['label' => 'Orden',         'descripcion' => 'Organizar el espacio y tareas de forma eficiente.'],
-        ],
-        'TEC (Técnica de Cocina)' => [
-            'cocina_local'       => ['label' => 'Cocina Local',       'descripcion' => 'Dominar técnicas culinarias locales.'],
-        ],
-        'COC (Cocina)' => [
-            'cocinero'            => ['label' => 'Cocinero',                 'descripcion' => 'Encargarse de la preparación de platos principales.'],
-        ],
-    ];
+    $grupos = cdb_grafica_get_criterios_organizados( 'empleado' );
 
     // Encolar estilos y scripts si quieres
     $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';

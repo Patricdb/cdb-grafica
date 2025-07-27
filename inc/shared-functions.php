@@ -49,3 +49,34 @@ function cdb_inyectar_formulario_y_grafica( $content ) {
     return $content;
 }
 add_filter( 'the_content', 'cdb_inyectar_formulario_y_grafica' );
+
+/**
+ * Obtiene los criterios organizados por grupo para el tipo de gráfica
+ * indicado. Devuelve una matriz donde cada grupo contiene los slugs de
+ * los criterios junto con su etiqueta y descripción.
+ *
+ * @param string $grafica_tipo Tipo de gráfica ('bar' o 'empleado').
+ * @return array[] Array asociativo de grupos y criterios.
+ */
+function cdb_grafica_get_criterios_organizados( $grafica_tipo ) {
+    $option   = 'cdb_grafica_criterios_' . $grafica_tipo;
+    $defaults = cdb_grafica_default_criterios( $grafica_tipo );
+    $data     = get_option( $option, $defaults );
+
+    $grupos = [];
+    foreach ( $data as $grupo ) {
+        $lista = [];
+        usort( $grupo['criterios'], function ( $a, $b ) {
+            return intval( $a['orden'] ) - intval( $b['orden'] );
+        } );
+        foreach ( $grupo['criterios'] as $crit ) {
+            $lista[ $crit['slug'] ] = [
+                'label'       => $crit['label'],
+                'descripcion' => $crit['descripcion'],
+            ];
+        }
+        $grupos[ $grupo['grupo'] ] = $lista;
+    }
+
+    return $grupos;
+}
