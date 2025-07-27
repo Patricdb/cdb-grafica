@@ -19,6 +19,8 @@ function cdb_grafica_colores_page() {
             'bar_border'          => sanitize_text_field($_POST['bar_border'] ?? ''),
             'empleado_background' => sanitize_text_field($_POST['empleado_background'] ?? ''),
             'empleado_border'     => sanitize_text_field($_POST['empleado_border'] ?? ''),
+            'ticks_color'         => sanitize_text_field($_POST['ticks_color'] ?? ''),
+            'ticks_backdrop'      => sanitize_text_field($_POST['ticks_backdrop'] ?? ''),
         ];
         update_option('cdb_grafica_colores', $colores);
         echo '<div class="updated"><p>Colores actualizados.</p></div>';
@@ -29,6 +31,8 @@ function cdb_grafica_colores_page() {
         'bar_border'          => 'rgba(75, 192, 192, 1)',
         'empleado_background' => 'rgba(75, 192, 192, 0.2)',
         'empleado_border'     => 'rgba(75, 192, 192, 1)',
+        'ticks_color'         => '#666666',
+        'ticks_backdrop'      => '',
     ];
     $colores = get_option('cdb_grafica_colores', $defaults);
 
@@ -55,6 +59,14 @@ function cdb_grafica_colores_page() {
                 <tr>
                     <th scope="row">Empleado - Color de borde</th>
                     <td><input type="text" name="empleado_border" value="<?php echo esc_attr($colores['empleado_border']); ?>" class="cdb-color-field" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Ticks - Color</th>
+                    <td><input type="text" name="ticks_color" value="<?php echo esc_attr($colores['ticks_color']); ?>" class="cdb-color-field" /></td>
+                </tr>
+                <tr>
+                    <th scope="row">Ticks - Color de fondo</th>
+                    <td><input type="text" name="ticks_backdrop" value="<?php echo esc_attr($colores['ticks_backdrop']); ?>" class="cdb-color-field" /></td>
                 </tr>
             </table>
             <?php submit_button(); ?>
