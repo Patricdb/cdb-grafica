@@ -507,4 +507,3 @@ if (in_array('empleado', $roles)) {
         exit;
     }
 }
-add_action('init', 'handle_grafica_bar_submission');
