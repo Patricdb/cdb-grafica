@@ -338,7 +338,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
     // Encolar estilos y scripts si quieres
     $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';
     wp_enqueue_style(
-        'plugin-style',
+        'cdb-grafica-empleado-style',
         plugins_url('style.css', dirname(__FILE__)),
         [],
         filemtime($style_path)
