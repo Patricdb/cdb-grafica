@@ -240,13 +240,17 @@ if (in_array('empleado', $roles)) {
     // 1) ¿Está intentando calificar a su propio empleado?
     if ($post->post_author == $user_id) {
         $puede_calificar = false;
-        $mensaje = 'No puedes calificar a tu propio empleado.';
+        $mensaje = __( 'No puedes calificar a tu propio empleado.', 'cdb-grafica' );
     } else {
         // 2) Verificar si ambos comparten algún equipo en wp_cdb_experiencia
-        $mi_empleado_id = cdb_obtener_empleado_id($user_id);
+        if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
+            $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
+        } else {
+            return;
+        }
         if (!$mi_empleado_id) {
             $puede_calificar = false;
-            $mensaje = 'No se encontró tu perfil de empleado.';
+            $mensaje = __( 'No se encontró tu perfil de empleado.', 'cdb-grafica' );
         } else {
             // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
             $existe_equipo_compartido = $wpdb->get_var($wpdb->prepare("
@@ -261,7 +265,7 @@ if (in_array('empleado', $roles)) {
 
             if (!$existe_equipo_compartido) {
                 $puede_calificar = false;
-                $mensaje = 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.';
+                $mensaje = __( 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.', 'cdb-grafica' );
             }
         }
     }
@@ -282,7 +286,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
     //    Si no existe coincidencia, no puede calificarlo.
     if (empty($bares_del_empleador)) {
         $puede_calificar = false;
-        $mensaje = 'No tienes ningún bar registrado para calificar.';
+        $mensaje = __( 'No tienes ningún bar registrado para calificar.', 'cdb-grafica' );
     } else {
         $in_bares = implode(',', array_map('intval', $bares_del_empleador));
 
@@ -297,7 +301,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
 
         if (!$existe_relacion) {
             $puede_calificar = false;
-            $mensaje = 'No pertenece a tu equipo.';
+            $mensaje = __( 'No pertenece a tu equipo.', 'cdb-grafica' );
         }
     }
 }
@@ -447,7 +451,11 @@ if (in_array('empleado', $roles)) {
     }
 
     // 2) Verificar si ambos (quien califica y el calificado) comparten equipo en wp_cdb_experiencia
-    $mi_empleado_id = cdb_obtener_empleado_id($user_id);
+    if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
+        $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
+    } else {
+        return;
+    }
     if (!$mi_empleado_id) {
         wp_die( esc_html__( 'No se encontró tu perfil de empleado.', 'cdb-grafica' ) );
     }
@@ -524,7 +532,7 @@ if (in_array('empleador', $roles)) {
         }
 
         // Redirigir
-        wp_redirect(get_permalink($post_id));
+        wp_safe_redirect( get_permalink( $post_id ) );
         exit;
     }
 }

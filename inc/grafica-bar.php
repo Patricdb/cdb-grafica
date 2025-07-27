@@ -264,10 +264,14 @@ add_shortcode('grafica_bar_form', function($atts) {
         $mensaje = ''; // Sin mensaje
     } else if (in_array('empleado', $roles)) {
     // 1) Obtener el CPT 'empleado' del usuario
-    $mi_empleado_id = cdb_obtener_empleado_id($user_id);
+    if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
+        $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
+    } else {
+        return;
+    }
     if (!$mi_empleado_id) {
         $puede_calificar = false;
-        $mensaje = 'No perteneces a ningún equipo de este bar.';
+        $mensaje = __( 'No perteneces a ningún equipo de este bar.', 'cdb-grafica' );
     } else {
         // 2) Verificar si existe alguna experiencia en wp_cdb_experiencia
         //    que vincule a este empleado con el bar (post_id).
@@ -284,7 +288,7 @@ add_shortcode('grafica_bar_form', function($atts) {
         //    no se puede calificar.
         if (!$existe_relacion) {
             $puede_calificar = false;
-            $mensaje = 'No perteneces a ningún equipo de este bar.';
+            $mensaje = __( 'No perteneces a ningún equipo de este bar.', 'cdb-grafica' );
         }
     }
 }
@@ -464,7 +468,11 @@ function handle_grafica_bar_submission() {
 
  // Para Empleado, verificar pertenencia al bar mediante wp_cdb_experiencia
 if (in_array('empleado', $roles)) {
-    $mi_empleado_id = cdb_obtener_empleado_id($user_id);
+    if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
+        $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
+    } else {
+        return;
+    }
     if (!$mi_empleado_id) {
         wp_die( esc_html__( 'No perteneces a ningún equipo de este bar.', 'cdb-grafica' ) );
     }
@@ -506,7 +514,7 @@ if (in_array('empleado', $roles)) {
             $wpdb->insert($table_name, $data);
         }
 
-        wp_redirect(get_permalink($post_id));
+        wp_safe_redirect( get_permalink( $post_id ) );
         exit;
     }
 }
