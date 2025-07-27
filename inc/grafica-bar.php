@@ -125,7 +125,14 @@ $results = $wpdb->get_results($wpdb->prepare("
         'bar_border'          => 'rgba(75, 192, 192, 1)'
     ];
     $opts     = get_option('cdb_grafica_colores', $defaults);
-    $attributes['backgroundColor'] = $opts['bar_background'] ?? $defaults['bar_background'];
+    $bg_color = $opts['bar_background'] ?? $defaults['bar_background'];
+    if (preg_match('/^#([a-f0-9]{6})$/i', $bg_color, $m)) {
+        $r        = hexdec(substr($m[1], 0, 2));
+        $g        = hexdec(substr($m[1], 2, 2));
+        $b        = hexdec(substr($m[1], 4, 2));
+        $bg_color = "rgba($r, $g, $b, 0.2)";
+    }
+    $attributes['backgroundColor'] = $bg_color;
     $attributes['borderColor']     = $opts['bar_border'] ?? $defaults['bar_border'];
 
     ob_start();

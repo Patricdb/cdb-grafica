@@ -32,13 +32,25 @@ document.addEventListener("DOMContentLoaded", function () {
     if (graficaEmpleadoElement && ctx) {
         const data = JSON.parse(graficaEmpleadoElement.dataset.valores);
 
+        const toRGBA = (hex, alpha = 0.2) => {
+            const match = /^#?([a-fA-F0-9]{6})$/.exec(hex || "");
+            if (match) {
+                const intVal = parseInt(match[1], 16);
+                const r = (intVal >> 16) & 255;
+                const g = (intVal >> 8) & 255;
+                const b = intVal & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+            return hex;
+        };
+
         const chartData = {
             labels: data.labels,
             datasets: [
                 {
                     label: `Puntuación Total: ${data.total.toFixed(1)}`, // Limitar a 1 decimal
                     data: data.promedios,
-                    backgroundColor: graficaEmpleadoElement.dataset.backgroundColor || "rgba(75, 192, 192, 0.2)",
+                    backgroundColor: toRGBA(graficaEmpleadoElement.dataset.backgroundColor) || "rgba(75, 192, 192, 0.2)",
                     borderColor: graficaEmpleadoElement.dataset.borderColor || "rgba(75, 192, 192, 1)",
                     borderWidth: 2,
                 },

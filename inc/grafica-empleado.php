@@ -100,7 +100,14 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         'empleado_border'     => 'rgba(75, 192, 192, 1)'
     ];
     $opts     = get_option('cdb_grafica_colores', $defaults);
-    $attributes['backgroundColor'] = $opts['empleado_background'] ?? $defaults['empleado_background'];
+    $bg_color = $opts['empleado_background'] ?? $defaults['empleado_background'];
+    if (preg_match('/^#([a-f0-9]{6})$/i', $bg_color, $m)) {
+        $r        = hexdec(substr($m[1], 0, 2));
+        $g        = hexdec(substr($m[1], 2, 2));
+        $b        = hexdec(substr($m[1], 4, 2));
+        $bg_color = "rgba($r, $g, $b, 0.2)";
+    }
+    $attributes['backgroundColor'] = $bg_color;
     $attributes['borderColor']     = $opts['empleado_border'] ?? $defaults['empleado_border'];
 
     ob_start();

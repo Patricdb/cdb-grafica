@@ -20,6 +20,16 @@ function cdb_grafica_colores_page() {
             'empleado_background' => sanitize_text_field($_POST['empleado_background'] ?? ''),
             'empleado_border'     => sanitize_text_field($_POST['empleado_border'] ?? ''),
         ];
+
+        foreach ($colores as $key => $color) {
+            if (preg_match('/^#([a-f0-9]{6})$/i', $color, $m)) {
+                $r = hexdec(substr($m[1], 0, 2));
+                $g = hexdec(substr($m[1], 2, 2));
+                $b = hexdec(substr($m[1], 4, 2));
+                $colores[$key] = "rgba($r, $g, $b, 0.2)";
+            }
+        }
+
         update_option('cdb_grafica_colores', $colores);
         echo '<div class="updated"><p>Colores actualizados.</p></div>';
     }
