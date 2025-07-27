@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 // Submenu page to modify graph colors
 function cdb_grafica_colores_menu() {
     add_submenu_page(

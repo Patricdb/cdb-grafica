@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
