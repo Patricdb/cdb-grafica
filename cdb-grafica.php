@@ -25,6 +25,7 @@ add_action( 'plugins_loaded', 'cdb_grafica_load_textdomain' );
 register_activation_hook(__FILE__, 'grafica_bar_create_table');
 register_activation_hook(__FILE__, 'grafica_empleado_create_table');
 register_activation_hook(__FILE__, 'cdb_grafica_init_default_criterios');
+require_once plugin_dir_path(__FILE__) . 'inc/shared-functions.php';
 require_once plugin_dir_path(__FILE__) . 'admin/modificar_criterios.php';
 require_once plugin_dir_path(__FILE__) . 'admin/modificar_colores.php';
 

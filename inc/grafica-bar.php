@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+require_once plugin_dir_path( __FILE__ ) . 'shared-functions.php';
 // inc/grafica-bar.php
 
 // ------------------------------------------------------------------
@@ -59,33 +60,8 @@ $results = $wpdb->get_results($wpdb->prepare("
     SELECT * FROM $table_name WHERE post_id = %d
 ", $post_id));
 
-    // Inicializar grupos
-    $grupos = [
-        'DIB' => [
-            'relacion_superiores'
-        ],
-        'COE' => [
-            'salario'
-        ],
-        'EDT' => [
-            'espacio_seguro'
-        ],
-        'COL' => [
-            'turnos_justos'
-        ],
-        'EQU' => [
-            'motivacion'
-        ],
-        'ALB' => [
-            'bienvenida'
-        ],
-        'DPF' => [
-            'formacion'
-        ],
-        'CLI' => [
-            'reputacion'
-        ]
-    ];
+    // Obtener grupos de criterios desde la configuración
+    $grupos = cdb_grafica_get_criterios_organizados( 'bar' );
 
     // Etiquetas de la gráfica
     $etiquetas_grafica = array_keys($grupos);
@@ -96,7 +72,7 @@ $results = $wpdb->get_results($wpdb->prepare("
         $total_grupo = 0;
         $count       = 0;
         foreach ($results as $row) {
-            foreach ($campos as $campo) {
+            foreach ( array_keys( $campos ) as $campo ) {
                 // Un valor 0 indica que el criterio no fue valorado y se ignora
                 if (isset($row->$campo) && $row->$campo != 0) {
                     $total_grupo += $row->$campo;
@@ -303,56 +279,7 @@ add_shortcode('grafica_bar_form', function($atts) {
     ), ARRAY_A);
     
     // Definir los nombres y descripciones de las características
-    $grupos = [
-        'DIB (Direccion)' => [
-            'relacion_superiores' => [
-                'label' => 'Relación con Superiores', 
-                'descripcion' => 'Relación de los empleados con los supervisores o gerentes.'
-            ],
-        ],
-        'COE (Condiciones Económicas)' => [
-            'salario' => [
-                'label' => 'Salario', 
-                'descripcion' => 'Adecuación del salario a las funciones desempeñadas.'
-            ],
-        ],
-        'EDT (Espacio de trabajo)' => [
-            'espacio_seguro' => [
-                'label' => 'Espacio Seguro', 
-                'descripcion' => 'Percepción general de seguridad en el lugar de trabajo.'
-            ],
-        ],
-        'COL (Condiciones Laborales)' => [
-            'turnos_justos' => [
-                 'label' => 'Turnos Justos', 
-                'descripcion' => 'Distribución equitativa de turnos laborales entre los empleados.'
-            ],
-        ],
-        'EQU (Equipo)' => [
-            'motivacion' => [
-                'label' => 'Motivación', 
-                'descripcion' => 'Capacidad del equipo para mantener la motivación alta.'
-            ],
-        ],
-        'ALB (Ambiente Laboral)' => [
-            'bienvenida' => [
-                'label' => 'Bienvenida', 
-                'descripcion' => 'Valoración sobre cómo se recibe a los nuevos empleados en el equipo.'
-            ],
-        ],
-        'DPF (Desarrollo Profesional)' => [
-            'formacion' => [
-                'label' => 'Formación', 
-                'descripcion' => 'Oportunidades de capacitación y formación profesional.'
-            ],
-        ],
-        'CLI (Clientela)' => [
-            'reputacion' => [
-                'label' => 'Reputación', 
-                'descripcion' => 'Reputación general del lugar frente a los clientes.'
-            ],
-        ],
-    ];
+    $grupos = cdb_grafica_get_criterios_organizados( 'bar' );
 
 // Encolar estilos y scripts (acordeón, etc.)
     $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';

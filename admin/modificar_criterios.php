@@ -107,13 +107,13 @@ function cdb_grafica_modificar_criterios_page() {
         <table class="widefat fixed" style="max-width:800px">
             <tbody>
             <?php $vista = cdb_grafica_get_criterios_organizados( $tab ); ?>
-            <?php foreach ( $vista as $grupo_nombre => $lista ) : ?>
+            <?php foreach ( $vista as $grupo_nombre => $items ) : ?>
                 <tr>
                     <th colspan="2"><?php echo esc_html( $grupo_nombre ); ?></th>
                 </tr>
-                <?php foreach ( $lista as $etiqueta ) : ?>
+                <?php foreach ( $items as $info ) : ?>
                     <tr>
-                        <td style="padding-left:20px;"><?php echo esc_html( $etiqueta ); ?></td>
+                        <td style="padding-left:20px;"><?php echo esc_html( $info['label'] ); ?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php endforeach; ?>
@@ -123,23 +123,7 @@ function cdb_grafica_modificar_criterios_page() {
     <?php
 }
 
-// Definir grupos de criterios reales
-function cdb_grafica_get_criterios_organizados($grafica_tipo) {
-    $option   = 'cdb_grafica_criterios_' . $grafica_tipo;
-    $defaults = cdb_grafica_default_criterios($grafica_tipo);
-    $data     = get_option($option, $defaults);
 
-    $grupos = [];
-    foreach ($data as $grupo) {
-        $lista = [];
-        usort($grupo['criterios'], function($a, $b) { return intval($a['orden']) - intval($b['orden']); });
-        foreach ($grupo['criterios'] as $crit) {
-            $lista[] = $crit['label'];
-        }
-        $grupos[$grupo['grupo']] = $lista;
-    }
-    return $grupos;
-}
 
 function cdb_grafica_default_criterios($tipo) {
     if ($tipo === 'bar') {
