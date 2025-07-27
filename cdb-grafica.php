@@ -15,6 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Versión actual del plugin
 define('CDB_GRAFICA_VERSION', '1.0.0');
 
+// Cargar traducciones
+function cdb_grafica_load_textdomain() {
+    load_plugin_textdomain( 'cdb-grafica', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'cdb_grafica_load_textdomain' );
+
 // Hooks de activación para crear tablas
 register_activation_hook(__FILE__, 'grafica_bar_create_table');
 register_activation_hook(__FILE__, 'grafica_empleado_create_table');
@@ -71,8 +77,7 @@ function cdb_obtener_grafica() {
     $table_name = $wpdb->prefix . 'grafica_' . $type . '_results';
 
     // Consultar los datos
-    $query   = $wpdb->prepare("SELECT * FROM {$table_name}");
-    $results = $wpdb->get_results($query, ARRAY_A);
+    $results = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
 
     if (empty($results)) {
         wp_send_json_error(['message' => __( 'No se encontraron datos.', 'cdb-grafica' )]);
