@@ -525,4 +525,3 @@ if (in_array('empleador', $roles)) {
         exit;
     }
 }
-add_action('init', 'handle_grafica_empleado_submission');
