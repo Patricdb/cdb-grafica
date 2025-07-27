@@ -59,7 +59,7 @@ function cdb_obtener_grafica() {
     $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
 
     if (!$type || !in_array($type, ['bar', 'empleado'])) {
-        wp_send_json_error(['message' => 'Tipo inválido.']);
+        wp_send_json_error(['message' => __( 'Tipo inválido.', 'cdb-grafica' )]);
         return;
     }
 
@@ -71,7 +71,7 @@ function cdb_obtener_grafica() {
     $results = $wpdb->get_results($query, ARRAY_A);
 
     if (empty($results)) {
-        wp_send_json_error(['message' => 'No se encontraron datos.']);
+        wp_send_json_error(['message' => __( 'No se encontraron datos.', 'cdb-grafica' )]);
         return;
     }
 
