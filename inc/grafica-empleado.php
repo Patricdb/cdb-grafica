@@ -19,12 +19,13 @@ function registrar_bloque_grafica_empleado() {
         }
         return;
     }
-    $script_url = plugins_url('build/empleado/index.js', dirname(__FILE__)) . '?v=' . time();
+    $script_path = plugin_dir_path(dirname(__FILE__)) . 'build/empleado/index.js';
+    $script_url  = plugins_url('build/empleado/index.js', dirname(__FILE__));
     wp_register_script(
         'cdb-grafica-empleado',
         $script_url,
         $asset_data['dependencies'],
-        $asset_data['version'],
+        filemtime($script_path),
         true
     );
     register_block_type('cdb/grafica-empleado', array(
@@ -198,7 +199,7 @@ add_shortcode('grafica_empleado_form', function ($atts) {
 
     // Verificar permiso global
     if (!current_user_can('submit_grafica_empleado')) {
-        return '<p>No tienes permisos para enviar resultados.</p>';
+        return '<p>' . esc_html__( 'No tienes permisos para enviar resultados.', 'cdb-grafica' ) . '</p>';
     }
 
     global $wpdb;
@@ -210,7 +211,7 @@ add_shortcode('grafica_empleado_form', function ($atts) {
     $post       = get_post($post_id);
 
     if (!$post || $post->post_type !== 'empleado') {
-        return '<p>Este contenido no es un empleado válido.</p>';
+        return '<p>' . esc_html__( 'Este contenido no es un empleado válido.', 'cdb-grafica' ) . '</p>';
     }
 
     // Determinar si se muestra el formulario o no:
@@ -321,17 +322,19 @@ if (in_array('empleador', $roles) && $puede_calificar) {
     ];
 
     // Encolar estilos y scripts si quieres
+    $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';
     wp_enqueue_style(
         'plugin-style',
         plugins_url('style.css', dirname(__FILE__)),
         [],
-        time()
+        filemtime($style_path)
     );
+    $script_form_path = plugin_dir_path(dirname(__FILE__)) . 'script.js';
     wp_enqueue_script(
         'grafica-empleado-form-script',
         plugins_url('script.js', dirname(__FILE__)),
         ['jquery'],
-        null,
+        filemtime($script_form_path),
         true
     );
 
@@ -390,16 +393,18 @@ if (in_array('empleador', $roles) && $puede_calificar) {
 });
 
 // ------------------------------------------------------------------
-// 6. Procesar el envío del formulario (las mismas validaciones).
+// 6. Procesar el envío del formulario "grafica_empleado_form".
+//    Repite las validaciones de rol y guarda o actualiza los datos
+//    en la tabla personalizada del empleado evaluado.
 // ------------------------------------------------------------------
 function handle_grafica_empleado_submission() {
     if (isset($_POST['submit_grafica_empleado'])) {
         // Repetir validaciones para seguridad
         if (!isset($_POST['grafica_empleado_nonce']) || !wp_verify_nonce($_POST['grafica_empleado_nonce'], 'submit_grafica_empleado')) {
-            wp_die('Nonce inválido.');
+            wp_die( esc_html__( 'Nonce inválido.', 'cdb-grafica' ) );
         }
         if (!current_user_can('submit_grafica_empleado')) {
-            wp_die('No tienes permisos para realizar esta acción.');
+            wp_die( esc_html__( 'No tienes permisos para realizar esta acción.', 'cdb-grafica' ) );
         }
 
         global $wpdb;
@@ -411,23 +416,23 @@ function handle_grafica_empleado_submission() {
         $post       = get_post($post_id);
 
         if (!$post) {
-            wp_die('Empleado inválido.');
+            wp_die( esc_html__( 'Empleado inválido.', 'cdb-grafica' ) );
         }
         if ($post->post_type !== 'empleado') {
-            wp_die('No es un post de tipo empleado.');
+            wp_die( esc_html__( 'No es un post de tipo empleado.', 'cdb-grafica' ) );
         }
 
 // Validaciones de rol
 if (in_array('empleado', $roles)) {
     // 1) Evitar que un empleado califique su propio empleado
     if ($post->post_author == $user_id) {
-        wp_die('No puedes calificar a tu propio empleado.');
+        wp_die( esc_html__( 'No puedes calificar a tu propio empleado.', 'cdb-grafica' ) );
     }
 
     // 2) Verificar si ambos (quien califica y el calificado) comparten equipo en wp_cdb_experiencia
     $mi_empleado_id = cdb_obtener_empleado_id($user_id);
     if (!$mi_empleado_id) {
-        wp_die('No se encontró tu perfil de empleado.');
+        wp_die( esc_html__( 'No se encontró tu perfil de empleado.', 'cdb-grafica' ) );
     }
 
     // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
@@ -442,7 +447,7 @@ if (in_array('empleado', $roles)) {
     ", $mi_empleado_id, $post_id));
 
     if (!$existe_equipo_compartido) {
-        wp_die('No puedes calificar a un empleado que no pertenece a tu mismo equipo.');
+        wp_die( esc_html__( 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.', 'cdb-grafica' ) );
     }
 }
 
@@ -459,7 +464,7 @@ if (in_array('empleador', $roles)) {
 
     // 2) Verificar si el empleado (post_id) tiene experiencia en alguno de esos bares
     if (empty($bares_del_empleador)) {
-        wp_die('No tienes bares para calificar a este empleado.');
+        wp_die( esc_html__( 'No tienes bares para calificar a este empleado.', 'cdb-grafica' ) );
     } else {
         $in_bares = implode(',', array_map('intval', $bares_del_empleador));
 
@@ -472,7 +477,7 @@ if (in_array('empleador', $roles)) {
         ", $post_id));
 
         if (!$existe_relacion) {
-            wp_die('No pertenece a tu equipo.');
+            wp_die( esc_html__( 'No pertenece a tu equipo.', 'cdb-grafica' ) );
         }
     }
 }

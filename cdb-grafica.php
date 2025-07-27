@@ -8,6 +8,9 @@
  * Text Domain: cdb-grafica
  */
 
+// Versión actual del plugin
+define('CDB_GRAFICA_VERSION', '1.0.0');
+
 // Hooks de activación para crear tablas
 register_activation_hook(__FILE__, 'grafica_bar_create_table');
 register_activation_hook(__FILE__, 'grafica_empleado_create_table');
@@ -63,7 +66,8 @@ function cdb_obtener_grafica() {
     $table_name = $wpdb->prefix . 'grafica_' . $type . '_results';
 
     // Consultar los datos
-    $results = $wpdb->get_results("SELECT * FROM $table_name", ARRAY_A);
+    $query   = $wpdb->prepare("SELECT * FROM {$table_name}");
+    $results = $wpdb->get_results($query, ARRAY_A);
 
     if (empty($results)) {
         wp_send_json_error(['message' => 'No se encontraron datos.']);
