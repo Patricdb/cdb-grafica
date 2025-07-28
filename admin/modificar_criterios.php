@@ -377,13 +377,9 @@ function cdb_grafica_get_criterios_organizados($grafica_tipo) {
         foreach ( $criterios as $grupo => $items ) {
             $labels = [];
             foreach ( $items as $info ) {
-                if ( $info['visible'] ?? true ) {
-                    $labels[] = $info['label'];
-                }
+                $labels[] = $info['label'];
             }
-            if ( ! empty( $labels ) ) {
-                $grupos[ $grupo ] = $labels;
-            }
+            $grupos[ $grupo ] = $labels;
         }
     } elseif ($grafica_tipo === 'empleado') {
         $criterios = cdb_get_criterios_empleado();
@@ -391,13 +387,9 @@ function cdb_grafica_get_criterios_organizados($grafica_tipo) {
         foreach ($criterios as $grupo => $items) {
             $labels = [];
             foreach ($items as $info) {
-                if ( $info['visible'] ?? true ) {
-                    $labels[] = $info['label'];
-                }
+                $labels[] = $info['label'];
             }
-            if ( ! empty( $labels ) ) {
-                $grupos[$grupo] = $labels;
-            }
+            $grupos[$grupo] = $labels;
         }
     } else {
         $grupos = [];

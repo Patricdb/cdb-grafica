@@ -57,15 +57,7 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
     $criterios = cdb_get_criterios_empleado();
     $grupos    = [];
     foreach ($criterios as $grupo_nombre => $campos) {
-        $campos_visibles = array_filter(
-            $campos,
-            function ( $info ) {
-                return $info['visible'] ?? true;
-            }
-        );
-        if ( ! empty( $campos_visibles ) ) {
-            $grupos[$grupo_nombre] = array_keys($campos_visibles);
-        }
+        $grupos[$grupo_nombre] = array_keys($campos);
     }
 
     // Calcular promedios por grupo
@@ -356,17 +348,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
         <?php wp_nonce_field('submit_grafica_empleado', 'grafica_empleado_nonce'); ?>
 
-        <?php foreach ($grupos as $grupo_nombre => $campos):
-            $campos_visibles = array_filter(
-                $campos,
-                function ( $info ) {
-                    return $info['visible'] ?? true;
-                }
-            );
-            if ( empty( $campos_visibles ) ) {
-                continue;
-            }
-        ?>
+        <?php foreach ($grupos as $grupo_nombre => $campos): ?>
             <div class="accordion">
                 <div class="accordion-header">
                     <button type="button" class="accordion-toggle">
@@ -374,7 +356,7 @@ if (in_array('empleador', $roles) && $puede_calificar) {
                     </button>
                 </div>
                 <div class="accordion-content" style="display: none;">
-                    <?php foreach ($campos_visibles as $campo_slug => $campo_info):
+                    <?php foreach ($campos as $campo_slug => $campo_info): 
                         $valor_existente = isset($existing_data[$campo_slug]) ? $existing_data[$campo_slug] : '';
                     ?>
                         <label for="<?php echo esc_attr($campo_slug); ?>">
