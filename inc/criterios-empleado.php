@@ -17,6 +17,12 @@ function cdb_get_criterios_empleado() {
                 'descripcion' => 'Atender y servir a los clientes en sala.'
             ],
         ],
+        'SAL (Sala)' => [
+            'ritmo_sala' => [
+                'label' => 'Ritmo',
+                'descripcion' => 'Gestión y ritmo del servicio.'
+              ],
+        ],
         'TES (Técnica Sala)' => [
             'venta' => [
                 'label' => 'Venta',
