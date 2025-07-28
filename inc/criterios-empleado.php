@@ -8,49 +8,57 @@ function cdb_get_criterios_empleado() {
         'DIE (Dirección)' => [
             'direccion' => [
                 'label' => 'Dirección',
-                'descripcion' => 'Guiar al equipo hacia los objetivos comunes.'
+                'descripcion' => 'Guiar al equipo hacia los objetivos comunes.',
+                'visible' => true,
             ],
         ],
         'SAL (Sala)' => [
             'camarero' => [
                 'label' => 'Camarero',
-                'descripcion' => 'Atender y servir a los clientes en sala.'
+                'descripcion' => 'Atender y servir a los clientes en sala.',
+                'visible' => true,
             ],
         ],
         'TES (Técnica Sala)' => [
             'venta' => [
                 'label' => 'Venta',
-                'descripcion' => 'Capacidades comerciales de venta.'
+                'descripcion' => 'Capacidades comerciales de venta.',
+                'visible' => true,
             ],
         ],
         'ATC (Atención al Cliente)' => [
             'satisfaccion' => [
                 'label' => 'Satisfacción',
-                'descripcion' => 'Garantizar una experiencia positiva para el cliente.'
+                'descripcion' => 'Garantizar una experiencia positiva para el cliente.',
+                'visible' => true,
             ],
         ],
         'TEQ (Trabajo en Equipo)' => [
             'cooperacion' => [
                 'label' => 'Cooperación',
-                'descripcion' => 'Colaborar para lograr objetivos comunes.'
+                'descripcion' => 'Colaborar para lograr objetivos comunes.',
+                'visible' => true,
             ],
         ],
         'ORL (Orden y Limpieza)' => [
             'orden' => [
                 'label' => 'Orden',
-                'descripcion' => 'Organizar el espacio y tareas de forma eficiente.'
+                'descripcion' => 'Organizar el espacio y tareas de forma eficiente.',
+                'visible' => true,
             ],
         ],
         'TEC (Técnica de Cocina)' => [
             'cocina_local' => [
                 'label' => 'Cocina Local',
-                'descripcion' => 'Dominar técnicas culinarias locales.'
+                'descripcion' => 'Dominar técnicas culinarias locales.',
+                'visible' => true,
             ],
         ],
         'COC (Cocina)' => [
             'cocinero' => [
                 'label' => 'Cocinero',
-                'descripcion' => 'Encargarse de la preparación de platos principales.'
+                'descripcion' => 'Encargarse de la preparación de platos principales.',
+                'visible' => true,
             ],
         ],
     ];
