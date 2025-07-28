@@ -192,6 +192,7 @@ function grafica_empleado_create_table() {
         id BIGINT(20) NOT NULL AUTO_INCREMENT,
         post_id BIGINT(20) NOT NULL,
         user_id BIGINT(20) NOT NULL,
+        user_role VARCHAR(50) NOT NULL,
         direccion FLOAT NOT NULL,
         camarero FLOAT NOT NULL,
         venta FLOAT NOT NULL,
@@ -496,10 +497,19 @@ if (in_array('empleador', $roles)) {
         // Otros roles sin restricciones
 
         // Preparar datos
-        $data   = ['post_id' => $post_id, 'user_id' => $user_id];
-        $fields = $wpdb->get_col("SHOW COLUMNS FROM $table_name");
+        $data   = [
+            'post_id' => $post_id,
+            'user_id' => $user_id,
+        ];
+        $fields     = $wpdb->get_col("SHOW COLUMNS FROM $table_name");
+
+        // Añadir el rol si la columna existe
+        if (in_array('user_role', $fields, true) && !empty($user->roles)) {
+            $data['user_role'] = sanitize_text_field($user->roles[0]);
+        }
+
         foreach ($fields as $field) {
-            if (isset($_POST[$field]) && $field !== 'id' && $field !== 'created_at') {
+            if (isset($_POST[$field]) && $field !== 'id' && $field !== 'created_at' && $field !== 'user_role') {
                 $data[$field] = floatval($_POST[$field]);
             }
         }

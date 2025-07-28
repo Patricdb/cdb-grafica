@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CDB Gráfica
  * Description: Plugin para manejar gráficas (bar y empleado) y sus tablas.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: CdB_
  * Author URI: https://proyectocdb.es
  * Text Domain: cdb-grafica
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Versión actual del plugin
-define('CDB_GRAFICA_VERSION', '1.0.0');
+define('CDB_GRAFICA_VERSION', '1.1.0');
 
 // Cargar traducciones
 function cdb_grafica_load_textdomain() {
