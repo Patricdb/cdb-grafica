@@ -68,6 +68,11 @@ function cdb_grafica_colores_page() {
         filemtime($alpha_js_path),
         true
     );
+    wp_localize_script(
+        'cdb-rgba-color-picker',
+        'cdbGraficaI18n',
+        [ 'alphaLabel' => __( 'Transparencia del color de fondo', 'cdb-grafica' ) ]
+    );
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Configurar Colores', 'cdb-grafica' ); ?></h1>
@@ -82,28 +87,31 @@ function cdb_grafica_colores_page() {
                     <th scope="row"><?php esc_html_e( 'Bar - Color de borde', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="bar_border" value="<?php echo esc_attr($colores['bar_border']); ?>" class="cdb-color-field" /></td>
                 </tr>
+                <tr class="cdb-section">
+                    <th colspan="2"><h2><?php esc_html_e( 'Gráfica Empleado', 'cdb-grafica' ); ?></h2></th>
+                </tr>
                 <tr>
-                    <th scope="row"><?php esc_html_e( 'Empleado - Color de fondo', 'cdb-grafica' ); ?></th>
+                    <th scope="row"><?php esc_html_e( 'Valores aportados por los Empleados – Color de fondo', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="empleado_background" value="<?php echo esc_attr($colores['empleado_background']); ?>" class="cdb-color-field" /></td>
                 </tr>
                 <tr>
-                    <th scope="row"><?php esc_html_e( 'Empleado - Color de borde', 'cdb-grafica' ); ?></th>
+                    <th scope="row"><?php esc_html_e( 'Valores aportados por los Empleados – Color de borde', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="empleado_border" value="<?php echo esc_attr($colores['empleado_border']); ?>" class="cdb-color-field" /></td>
                 </tr>
                 <tr>
-                    <th scope="row"><?php esc_html_e( 'Empleador - Color de fondo', 'cdb-grafica' ); ?></th>
+                    <th scope="row"><?php esc_html_e( 'Valores aportados por los Empleadores – Color de fondo', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="empleador_background" value="<?php echo esc_attr($colores['empleador_background']); ?>" class="cdb-color-field" /></td>
                 </tr>
                 <tr>
-                    <th scope="row"><?php esc_html_e( 'Empleador - Color de borde', 'cdb-grafica' ); ?></th>
+                    <th scope="row"><?php esc_html_e( 'Valores aportados por los Empleadores – Color de borde', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="empleador_border" value="<?php echo esc_attr($colores['empleador_border']); ?>" class="cdb-color-field" /></td>
                 </tr>
                 <tr>
-                    <th scope="row"><?php esc_html_e( 'Tutor - Color de fondo', 'cdb-grafica' ); ?></th>
+                    <th scope="row"><?php esc_html_e( 'Valores aportados por los Tutores – Color de fondo', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="tutor_background" value="<?php echo esc_attr($colores['tutor_background']); ?>" class="cdb-color-field" /></td>
                 </tr>
                 <tr>
-                    <th scope="row"><?php esc_html_e( 'Tutor - Color de borde', 'cdb-grafica' ); ?></th>
+                    <th scope="row"><?php esc_html_e( 'Valores aportados por los Tutores – Color de borde', 'cdb-grafica' ); ?></th>
                     <td><input type="text" name="tutor_border" value="<?php echo esc_attr($colores['tutor_border']); ?>" class="cdb-color-field" /></td>
                 </tr>
                 <tr>

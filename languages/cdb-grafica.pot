@@ -125,12 +125,31 @@ msgstr ""
 msgid "Bar - Color de borde"
 msgstr ""
 
+#: admin/modificar_colores.php:88
+msgid "Gráfica Empleado"
+msgstr ""
+
 #: admin/modificar_colores.php:75
-msgid "Empleado - Color de fondo"
+msgid "Valores aportados por los Empleados – Color de fondo"
 msgstr ""
 
 #: admin/modificar_colores.php:79
-msgid "Empleado - Color de borde"
+msgid "Valores aportados por los Empleados – Color de borde"
+msgstr ""
+#: admin/modificar_colores.php:100
+msgid "Valores aportados por los Empleadores – Color de fondo"
+msgstr ""
+#: admin/modificar_colores.php:104
+msgid "Valores aportados por los Empleadores – Color de borde"
+msgstr ""
+#: admin/modificar_colores.php:108
+msgid "Valores aportados por los Tutores – Color de fondo"
+msgstr ""
+#: admin/modificar_colores.php:112
+msgid "Valores aportados por los Tutores – Color de borde"
+msgstr ""
+#: admin/modificar_colores.php:67
+msgid "Transparencia del color de fondo"
 msgstr ""
 
 #: admin/modificar_colores.php:83
