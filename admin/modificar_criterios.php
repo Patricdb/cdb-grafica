@@ -125,6 +125,40 @@ function cdb_grafica_generate_criterios_php( $tipo, array $criterios ) {
         $timestamp .
         "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
 }
+
+/**
+ * Devuelve un aviso con información para actualizar manualmente los criterios.
+ *
+ * @param string $grupo Grupo del criterio.
+ * @param string $slug  Slug del criterio.
+ * @param string $label Etiqueta.
+ * @param string $desc  Descripción.
+ * @return string HTML del aviso.
+ */
+function cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc ) {
+    $snippet  = sprintf(
+        "'%s' => [\n  '%s' => [\n    'label' => '%s',\n    'descripcion' => '%s',\n  ],\n],",
+        $grupo,
+        $slug,
+        $label,
+        $desc
+    );
+
+    ob_start();
+    ?>
+    <div class="notice notice-info" style="margin-top:15px;">
+        <p><strong><?php esc_html_e( 'Actualiza el archivo de criterios del repositorio con la siguiente información:', 'cdb-grafica' ); ?></strong></p>
+        <p>
+            <?php printf( esc_html__( 'Grupo: %s', 'cdb-grafica' ), esc_html( $grupo ) ); ?><br />
+            <?php printf( esc_html__( 'Slug: %s', 'cdb-grafica' ), esc_html( $slug ) ); ?><br />
+            <?php printf( esc_html__( 'Etiqueta: %s', 'cdb-grafica' ), esc_html( $label ) ); ?><br />
+            <?php printf( esc_html__( 'Descripción: %s', 'cdb-grafica' ), esc_html( $desc ) ); ?>
+        </p>
+        <pre><code><?php echo esc_html( $snippet ); ?></code></pre>
+    </div>
+    <?php
+    return ob_get_clean();
+}
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
@@ -172,34 +206,7 @@ function cdb_grafica_modificar_criterios_page() {
     $edit_grupo = isset($_GET['edit_grupo']) ? sanitize_text_field(rawurldecode($_GET['edit_grupo'])) : '';
     $edit_slug  = isset($_GET['edit_slug']) ? sanitize_text_field($_GET['edit_slug']) : '';
     $add_new    = isset($_GET['add']) ? sanitize_text_field($_GET['add']) : '';
-
-    // Permite la descarga manual del archivo de criterios actualizado.
-    if ( isset( $_GET['download'] ) && current_user_can( 'manage_options' ) ) {
-        $download = sanitize_text_field( $_GET['download'] );
-        if ( 'bar' === $download ) {
-            $criterios = cdb_get_criterios_bar();
-            $tipo      = 'bar';
-        } elseif ( 'empleado' === $download ) {
-            $criterios = cdb_get_criterios_empleado();
-            $tipo      = 'empleado';
-        }
-
-        if ( isset( $criterios ) ) {
-            $content = cdb_grafica_generate_criterios_php( $tipo, $criterios );
-
-            if ( isset( $_GET['preview'] ) ) {
-                echo '<pre>' . esc_html( $content ) . '</pre>';
-                $download_url = esc_url( remove_query_arg( 'preview' ) );
-                echo '<p><a class="button" href="' . $download_url . '">' . esc_html__( 'Descargar archivo', 'cdb-grafica' ) . '</a></p>';
-                exit;
-            }
-
-            header( 'Content-Type: application/octet-stream' );
-            header( 'Content-Disposition: attachment; filename=criterios-' . $tipo . '.php' );
-            echo $content;
-            exit;
-        }
-    }
+    $notice_snippet = '';
 
     if (isset($_POST['cdb_edit_criterio_nonce']) && wp_verify_nonce($_POST['cdb_edit_criterio_nonce'], 'cdb_guardar_criterio')) {
         if (current_user_can('manage_options')) {
@@ -230,6 +237,7 @@ function cdb_grafica_modificar_criterios_page() {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_error_guardar', __( 'No se pudo guardar el archivo de criterios.', 'cdb-grafica' ) );
                     } else {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_criterio_actualizado', __( 'Criterio actualizado.', 'cdb-grafica' ), 'updated' );
+                        $notice_snippet = cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc );
                     }
                 }
             }
@@ -272,6 +280,7 @@ function cdb_grafica_modificar_criterios_page() {
                         add_settings_error('cdb_modificar_criterios', 'cdb_error_guardar', __('No se pudo guardar el archivo de criterios.', 'cdb-grafica'));
                     } else {
                         add_settings_error('cdb_modificar_criterios', 'cdb_criterio_creado', __('Criterio añadido.', 'cdb-grafica'), 'updated');
+                        $notice_snippet = cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc );
                     }
                 }
             }
@@ -281,12 +290,10 @@ function cdb_grafica_modificar_criterios_page() {
     <div class="wrap">
         <h1><?php esc_html_e( 'Modificar Criterios', 'cdb-grafica' ); ?></h1>
         <?php settings_errors('cdb_modificar_criterios'); ?>
+        <?php echo $notice_snippet; ?>
         <?php if ( current_user_can( 'manage_options' ) ) : ?>
             <div class="notice notice-warning" style="margin-top: 15px;">
-                <p><?php esc_html_e( 'IMPORTANTE: Los cambios realizados aquí modifican archivos PHP directamente en el servidor. Antes de desplegar una nueva versión desde el repositorio, descarga el archivo actualizado y súbelo manualmente a GitHub para evitar la pérdida de cambios.', 'cdb-grafica' ); ?></p>
-                <p>
-                    <a class="button" href="<?php echo esc_url( add_query_arg( [ 'page' => 'cdb_modificar_criterios', 'tab' => $tab, 'download' => $tab ], admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Descargar criterios actualizados', 'cdb-grafica' ); ?></a>
-                </p>
+                <p><?php esc_html_e( 'IMPORTANTE: Los cambios realizados aquí modifican archivos PHP directamente en el servidor. Tras guardar, actualiza manualmente el archivo de criterios en el repositorio para evitar la pérdida de cambios.', 'cdb-grafica' ); ?></p>
             </div>
         <?php endif; ?>
         <h2 class="nav-tab-wrapper">
