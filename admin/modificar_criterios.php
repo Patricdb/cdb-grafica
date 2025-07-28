@@ -135,13 +135,14 @@ function cdb_grafica_generate_criterios_php( $tipo, array $criterios ) {
  * @param string $desc  Descripción.
  * @return string HTML del aviso.
  */
-function cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc ) {
+function cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc, $visible = true ) {
     $snippet  = sprintf(
-        "'%s' => [\n  '%s' => [\n    'label' => '%s',\n    'descripcion' => '%s',\n  ],\n],",
+        "'%s' => [\n  '%s' => [\n    'label' => '%s',\n    'descripcion' => '%s',\n    'visible' => %s\n  ],\n],",
         $grupo,
         $slug,
         $label,
-        $desc
+        $desc,
+        $visible ? 'true' : 'false'
     );
 
     ob_start();
@@ -213,8 +214,9 @@ function cdb_grafica_modificar_criterios_page() {
             $tipo   = sanitize_text_field($_POST['tipo']);
             $grupo  = sanitize_text_field($_POST['grupo']);
             $slug   = sanitize_text_field($_POST['slug']);
-            $label  = sanitize_text_field($_POST['label']);
-            $desc   = sanitize_textarea_field($_POST['descripcion']);
+            $label   = sanitize_text_field($_POST['label']);
+            $desc    = sanitize_textarea_field($_POST['descripcion']);
+            $visible = isset($_POST['visible']);
 
             if ($tipo === 'empleado') {
                 $criterios = cdb_get_criterios_empleado();
@@ -227,6 +229,7 @@ function cdb_grafica_modificar_criterios_page() {
             if (isset($criterios[$grupo][$slug])) {
                 $criterios[$grupo][$slug]['label']       = $label;
                 $criterios[$grupo][$slug]['descripcion'] = $desc;
+                $criterios[$grupo][$slug]['visible']     = $visible;
 
                 $content = cdb_grafica_generate_criterios_php( $tipo, $criterios );
 
@@ -237,7 +240,15 @@ function cdb_grafica_modificar_criterios_page() {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_error_guardar', __( 'No se pudo guardar el archivo de criterios.', 'cdb-grafica' ) );
                     } else {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_criterio_actualizado', __( 'Criterio actualizado.', 'cdb-grafica' ), 'updated' );
-                        $notice_snippet = cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc );
+                        if ( ! $visible ) {
+                            add_settings_error(
+                                'cdb_modificar_criterios',
+                                'cdb_criterio_oculto',
+                                __( 'Este criterio está oculto: no se podrá valorar a partir de ahora, pero los datos históricos seguirán siendo tenidos en cuenta en gráficas y cálculos.', 'cdb-grafica' ),
+                                'updated'
+                            );
+                        }
+                        $notice_snippet = cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc, $visible );
                     }
                 }
             }
@@ -249,8 +260,9 @@ function cdb_grafica_modificar_criterios_page() {
             $tipo  = sanitize_text_field($_POST['tipo']);
             $grupo = sanitize_text_field($_POST['grupo']);
             $slug  = sanitize_title($_POST['slug']);
-            $label = sanitize_text_field($_POST['label']);
-            $desc  = sanitize_textarea_field($_POST['descripcion']);
+            $label   = sanitize_text_field($_POST['label']);
+            $desc    = sanitize_textarea_field($_POST['descripcion']);
+            $visible = isset($_POST['visible']);
 
             if ($tipo === 'empleado') {
                 $criterios = cdb_get_criterios_empleado();
@@ -270,6 +282,7 @@ function cdb_grafica_modificar_criterios_page() {
                 $criterios[$grupo][$slug] = [
                     'label'       => $label,
                     'descripcion' => $desc,
+                    'visible'     => $visible,
                 ];
 
                 $content = cdb_grafica_generate_criterios_php( $tipo, $criterios );
@@ -280,7 +293,15 @@ function cdb_grafica_modificar_criterios_page() {
                         add_settings_error('cdb_modificar_criterios', 'cdb_error_guardar', __('No se pudo guardar el archivo de criterios.', 'cdb-grafica'));
                     } else {
                         add_settings_error('cdb_modificar_criterios', 'cdb_criterio_creado', __('Criterio añadido.', 'cdb-grafica'), 'updated');
-                        $notice_snippet = cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc );
+                        if ( ! $visible ) {
+                            add_settings_error(
+                                'cdb_modificar_criterios',
+                                'cdb_criterio_oculto',
+                                __( 'Este criterio está oculto: no se podrá valorar a partir de ahora, pero los datos históricos seguirán siendo tenidos en cuenta en gráficas y cálculos.', 'cdb-grafica' ),
+                                'updated'
+                            );
+                        }
+                        $notice_snippet = cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc, $visible );
                     }
                 }
             }
@@ -309,6 +330,7 @@ function cdb_grafica_modificar_criterios_page() {
                         <th><?php esc_html_e( 'Slug', 'cdb-grafica' ); ?></th>
                         <th><?php esc_html_e( 'Etiqueta', 'cdb-grafica' ); ?></th>
                         <th><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></th>
+                        <th><?php esc_html_e( 'Visible', 'cdb-grafica' ); ?></th>
                         <th><?php esc_html_e( 'Acciones', 'cdb-grafica' ); ?></th>
                     </tr>
                 </thead>
@@ -320,11 +342,12 @@ function cdb_grafica_modificar_criterios_page() {
                                 <td><?php echo esc_html( $slug ); ?></td>
                                 <td><?php echo esc_html( $info['label'] ); ?></td>
                                 <td><?php echo esc_html( $info['descripcion'] ); ?></td>
+                                <td><?php echo isset( $info['visible'] ) && ! $info['visible'] ? esc_html__( 'No', 'cdb-grafica' ) : esc_html__( 'Sí', 'cdb-grafica' ); ?></td>
                                 <td><a class="button" href="?page=cdb_modificar_criterios&tab=empleado&edit_grupo=<?php echo rawurlencode( $grupo ); ?>&edit_slug=<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Editar', 'cdb-grafica' ); ?></a></td>
                             </tr>
                             <?php if ( $edit_grupo === $grupo && $edit_slug === $slug ) { ?>
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="6">
                                         <form method="post">
                                             <input type="hidden" name="tipo" value="empleado" />
                                             <input type="hidden" name="grupo" value="<?php echo esc_attr( $grupo ); ?>" />
@@ -338,6 +361,10 @@ function cdb_grafica_modificar_criterios_page() {
                                                 <label><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></label><br />
                                                 <textarea name="descripcion" class="large-text" rows="3"><?php echo esc_textarea( $info['descripcion'] ); ?></textarea>
                                             </p>
+                                            <p>
+                                                <label><?php esc_html_e( 'Visible', 'cdb-grafica' ); ?></label>
+                                                <input type="checkbox" name="visible" value="1" <?php checked( ! isset( $info['visible'] ) || $info['visible'] ); ?> />
+                                            </p>
                                             <?php submit_button( __( 'Guardar', 'cdb-grafica' ) ); ?>
                                         </form>
                                     </td>
@@ -347,7 +374,7 @@ function cdb_grafica_modificar_criterios_page() {
                     <?php } ?>
                     <?php if ( $add_new && $tab === 'empleado' ) { ?>
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <form method="post">
                                     <input type="hidden" name="tipo" value="empleado" />
                                     <?php wp_nonce_field( 'cdb_guardar_nuevo_criterio', 'cdb_nuevo_criterio_nonce' ); ?>
@@ -371,13 +398,17 @@ function cdb_grafica_modificar_criterios_page() {
                                         <label><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></label><br />
                                         <textarea name="descripcion" class="large-text" rows="3"></textarea>
                                     </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Visible', 'cdb-grafica' ); ?></label>
+                                        <input type="checkbox" name="visible" value="1" checked />
+                                    </p>
                                     <?php submit_button( __( 'Guardar', 'cdb-grafica' ) ); ?>
                                 </form>
                             </td>
                         </tr>
                     <?php } ?>
                     <tr>
-                        <td colspan="5"><a class="button" href="?page=cdb_modificar_criterios&tab=empleado&add=1"><?php esc_html_e( 'Añadir Criterio', 'cdb-grafica' ); ?></a></td>
+                        <td colspan="6"><a class="button" href="?page=cdb_modificar_criterios&tab=empleado&add=1"><?php esc_html_e( 'Añadir Criterio', 'cdb-grafica' ); ?></a></td>
                     </tr>
                 </tbody>
             </table>
@@ -394,6 +425,7 @@ function cdb_grafica_modificar_criterios_page() {
                         <th><?php esc_html_e( 'Slug', 'cdb-grafica' ); ?></th>
                         <th><?php esc_html_e( 'Etiqueta', 'cdb-grafica' ); ?></th>
                         <th><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></th>
+                        <th><?php esc_html_e( 'Visible', 'cdb-grafica' ); ?></th>
                         <th><?php esc_html_e( 'Acciones', 'cdb-grafica' ); ?></th>
                     </tr>
                 </thead>
@@ -405,11 +437,12 @@ function cdb_grafica_modificar_criterios_page() {
                                 <td><?php echo esc_html( $slug ); ?></td>
                                 <td><?php echo esc_html( $info['label'] ); ?></td>
                                 <td><?php echo esc_html( $info['descripcion'] ); ?></td>
+                                <td><?php echo isset( $info['visible'] ) && ! $info['visible'] ? esc_html__( 'No', 'cdb-grafica' ) : esc_html__( 'Sí', 'cdb-grafica' ); ?></td>
                                 <td><a class="button" href="?page=cdb_modificar_criterios&tab=bar&edit_grupo=<?php echo rawurlencode( $grupo ); ?>&edit_slug=<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Editar', 'cdb-grafica' ); ?></a></td>
                             </tr>
                             <?php if ( $edit_grupo === $grupo && $edit_slug === $slug ) { ?>
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="6">
                                         <form method="post">
                                             <input type="hidden" name="tipo" value="bar" />
                                             <input type="hidden" name="grupo" value="<?php echo esc_attr( $grupo ); ?>" />
@@ -423,6 +456,10 @@ function cdb_grafica_modificar_criterios_page() {
                                                 <label><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></label><br />
                                                 <textarea name="descripcion" class="large-text" rows="3"><?php echo esc_textarea( $info['descripcion'] ); ?></textarea>
                                             </p>
+                                            <p>
+                                                <label><?php esc_html_e( 'Visible', 'cdb-grafica' ); ?></label>
+                                                <input type="checkbox" name="visible" value="1" <?php checked( ! isset( $info['visible'] ) || $info['visible'] ); ?> />
+                                            </p>
                                             <?php submit_button( __( 'Guardar', 'cdb-grafica' ) ); ?>
                                         </form>
                                     </td>
@@ -432,7 +469,7 @@ function cdb_grafica_modificar_criterios_page() {
                     <?php } ?>
                     <?php if ( $add_new && $tab === 'bar' ) { ?>
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <form method="post">
                                     <input type="hidden" name="tipo" value="bar" />
                                     <?php wp_nonce_field( 'cdb_guardar_nuevo_criterio', 'cdb_nuevo_criterio_nonce' ); ?>
@@ -456,13 +493,17 @@ function cdb_grafica_modificar_criterios_page() {
                                         <label><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></label><br />
                                         <textarea name="descripcion" class="large-text" rows="3"></textarea>
                                     </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Visible', 'cdb-grafica' ); ?></label>
+                                        <input type="checkbox" name="visible" value="1" checked />
+                                    </p>
                                     <?php submit_button( __( 'Guardar', 'cdb-grafica' ) ); ?>
                                 </form>
                             </td>
                         </tr>
                     <?php } ?>
                     <tr>
-                        <td colspan="5"><a class="button" href="?page=cdb_modificar_criterios&tab=bar&add=1"><?php esc_html_e( 'Añadir Criterio', 'cdb-grafica' ); ?></a></td>
+                        <td colspan="6"><a class="button" href="?page=cdb_modificar_criterios&tab=bar&add=1"><?php esc_html_e( 'Añadir Criterio', 'cdb-grafica' ); ?></a></td>
                     </tr>
                 </tbody>
             </table>
