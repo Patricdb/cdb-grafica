@@ -57,7 +57,7 @@ function cdb_grafica_modificar_criterios_page() {
                     <td>
                         <select name="criterio_actual" id="criterio_actual">
                             <?php foreach ($criterios as $grupo => $items) { ?>
-                                <optgroup label="<?php echo esc_attr__( $grupo, 'cdb-grafica' ); ?>">
+                                <optgroup label="<?php echo esc_attr( $grupo ); ?>">
                                     <?php foreach ($items as $criterio) { ?>
                                         <option value="<?php echo esc_attr( $criterio ); ?>">
                                             <?php echo esc_html__( $criterio, 'cdb-grafica' ); ?>
@@ -82,12 +82,12 @@ function cdb_grafica_get_criterios_organizados($grafica_tipo) {
     } elseif ($grafica_tipo === 'empleado') {
         $criterios = cdb_get_criterios_empleado();
         $grupos    = [];
-        foreach ($criterios as $grupo => $items) {
+        foreach ($criterios as $sigla => $info) {
             $labels = [];
-            foreach ($items as $info) {
-                $labels[] = $info['label'];
+            foreach ($info['criterios'] as $campo) {
+                $labels[] = $campo['label'];
             }
-            $grupos[$grupo] = $labels;
+            $grupos[$sigla . ' (' . $info['label'] . ')'] = $labels;
         }
     } else {
         $grupos = [];
