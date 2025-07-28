@@ -62,6 +62,48 @@ function cdb_grafica_backup_file( $file, $max_backups = 5 ) {
         }
     }
 }
+
+/**
+ * Exporta un valor a PHP manteniendo la indentación y la sintaxis corta.
+ *
+ * @param mixed $value            Valor a exportar.
+ * @param int   $indent           Nivel de indentación inicial.
+ * @param bool  $trim_first_line  Si se debe eliminar la indentación de la primera línea.
+ * @return string Representación formateada.
+ */
+function cdb_grafica_pretty_export( $value, $indent = 0, $trim_first_line = false ) {
+    $spacer = str_repeat( '    ', $indent );
+
+    if ( is_array( $value ) ) {
+        $indexed = array_keys( $value ) === range( 0, count( $value ) - 1 );
+        $lines   = [ $spacer . '[' ];
+
+        foreach ( $value as $key => $val ) {
+            $line = str_repeat( '    ', $indent + 1 );
+
+            if ( ! $indexed ) {
+                $line .= var_export( $key, true ) . ' => ';
+            }
+
+            $line .= is_array( $val )
+                ? cdb_grafica_pretty_export( $val, $indent + 1, true )
+                : var_export( $val, true );
+
+            $lines[] = $line . ',';
+        }
+
+        $lines[] = $spacer . ']';
+        $result  = implode( "\n", $lines );
+
+        if ( $trim_first_line ) {
+            $result = preg_replace( '/^\s+/', '', $result );
+        }
+
+        return $result;
+    }
+
+    return var_export( $value, true );
+}
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
@@ -149,7 +191,9 @@ function cdb_grafica_modificar_criterios_page() {
                 $criterios[$grupo][$slug]['label']       = $label;
                 $criterios[$grupo][$slug]['descripcion'] = $desc;
 
-                $content = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\nfunction cdb_get_criterios_{$tipo}() {\n    return " . var_export($criterios, true) . ";\n}\n";
+                $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
+                $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
+                $content   = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\n" . $timestamp . "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
 
                 if ( cdb_grafica_ensure_writable( $file ) ) {
                     // Realizar copia de seguridad antes de escribir.
@@ -192,7 +236,9 @@ function cdb_grafica_modificar_criterios_page() {
                     'descripcion' => $desc,
                 ];
 
-                $content = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\nfunction cdb_get_criterios_{$tipo}() {\n    return " . var_export($criterios, true) . ";\n}\n";
+                $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
+                $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
+                $content   = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\n" . $timestamp . "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
 
                 if ( cdb_grafica_ensure_writable( $file ) ) {
                     cdb_grafica_backup_file( $file );
