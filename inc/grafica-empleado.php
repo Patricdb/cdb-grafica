@@ -135,21 +135,42 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
 
     // Obtener colores configurados
     $defaults = [
-        'empleado_background' => 'rgba(75, 192, 192, 0.2)',
-        'empleado_border'     => 'rgba(75, 192, 192, 1)',
-        'ticks_color'         => '#666666',
-        'ticks_backdrop'      => ''
+        'empleado_background'  => 'rgba(75, 192, 192, 0.2)',
+        'empleado_border'      => 'rgba(75, 192, 192, 1)',
+        'empleador_background' => 'rgba(54, 162, 235, 0.2)',
+        'empleador_border'     => 'rgba(54, 162, 235, 1)',
+        'tutor_background'     => 'rgba(255, 99, 132, 0.2)',
+        'tutor_border'         => 'rgba(255, 99, 132, 1)',
+        'ticks_color'          => '#666666',
+        'ticks_backdrop'       => ''
     ];
-    $opts     = get_option('cdb_grafica_colores', $defaults);
-    $attributes['backgroundColor']   = $opts['empleado_background'] ?? $defaults['empleado_background'];
-    $attributes['borderColor']       = $opts['empleado_border'] ?? $defaults['empleado_border'];
-    $attributes['ticksColor']        = $opts['ticks_color'] ?? $defaults['ticks_color'];
+    $opts        = get_option('cdb_grafica_colores', $defaults);
+
+    $role_colors = [
+        'empleado'  => [
+            'background' => $opts['empleado_background'] ?? $defaults['empleado_background'],
+            'border'     => $opts['empleado_border'] ?? $defaults['empleado_border'],
+        ],
+        'empleador' => [
+            'background' => $opts['empleador_background'] ?? $defaults['empleador_background'],
+            'border'     => $opts['empleador_border'] ?? $defaults['empleador_border'],
+        ],
+        'tutor'     => [
+            'background' => $opts['tutor_background'] ?? $defaults['tutor_background'],
+            'border'     => $opts['tutor_border'] ?? $defaults['tutor_border'],
+        ],
+    ];
+
+    $attributes['backgroundColor']    = $role_colors['empleado']['background'];
+    $attributes['borderColor']        = $role_colors['empleado']['border'];
+    $attributes['ticksColor']         = $opts['ticks_color'] ?? $defaults['ticks_color'];
     $attributes['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults['ticks_backdrop'];
 
     ob_start();
     ?>
     <div id="grafica-empleado"
          data-valores="<?php echo esc_attr(wp_json_encode($data)); ?>"
+         data-role-colors="<?php echo esc_attr(wp_json_encode($role_colors)); ?>"
          data-background-color="<?php echo esc_attr($attributes['backgroundColor']); ?>"
          data-border-color="<?php echo esc_attr($attributes['borderColor']); ?>"
          data-ticks-color="<?php echo esc_attr($attributes['ticksColor']); ?>"
@@ -172,11 +193,7 @@ function generar_grafica_empleado_en_frontend() {
             const ctx = document.createElement('canvas');
             dataElement.appendChild(ctx);
 
-            const colores = {
-                empleado: 'blue',
-                empleador: 'green',
-                tutor: 'red'
-            };
+            const colores = JSON.parse(dataElement.dataset.roleColors || '{}');
 
             const chartData = {
                 labels: data.labels,
@@ -186,11 +203,12 @@ function generar_grafica_empleado_en_frontend() {
             if (data.datasets) {
                 Object.keys(data.datasets).forEach(function (rol) {
                     const valores = data.datasets[rol];
+                    const cfg = colores[rol] || {};
                     chartData.datasets.push({
                         label: rol,
                         data: valores,
-                        backgroundColor: colores[rol] || 'gray',
-                        borderColor: colores[rol] || 'gray',
+                        backgroundColor: cfg.background || 'gray',
+                        borderColor: cfg.border || 'gray',
                         borderWidth: 2
                     });
                 });
