@@ -108,6 +108,7 @@ function cdb_grafica_modificar_criterios_page() {
     $tab        = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'bar';
     $edit_grupo = isset($_GET['edit_grupo']) ? sanitize_text_field(rawurldecode($_GET['edit_grupo'])) : '';
     $edit_slug  = isset($_GET['edit_slug']) ? sanitize_text_field($_GET['edit_slug']) : '';
+    $add_new    = isset($_GET['add']) ? sanitize_text_field($_GET['add']) : '';
 
     if (isset($_POST['cdb_edit_criterio_nonce']) && wp_verify_nonce($_POST['cdb_edit_criterio_nonce'], 'cdb_guardar_criterio')) {
         if (current_user_can('manage_options')) {
@@ -138,6 +139,48 @@ function cdb_grafica_modificar_criterios_page() {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_error_guardar', __( 'No se pudo guardar el archivo de criterios.', 'cdb-grafica' ) );
                     } else {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_criterio_actualizado', __( 'Criterio actualizado.', 'cdb-grafica' ), 'updated' );
+                    }
+                }
+            }
+        }
+    }
+
+    if (isset($_POST['cdb_nuevo_criterio_nonce']) && wp_verify_nonce($_POST['cdb_nuevo_criterio_nonce'], 'cdb_guardar_nuevo_criterio')) {
+        if (current_user_can('manage_options')) {
+            $tipo  = sanitize_text_field($_POST['tipo']);
+            $grupo = sanitize_text_field($_POST['grupo']);
+            $slug  = sanitize_title($_POST['slug']);
+            $label = sanitize_text_field($_POST['label']);
+            $desc  = sanitize_textarea_field($_POST['descripcion']);
+
+            if ($tipo === 'empleado') {
+                $criterios = cdb_get_criterios_empleado();
+                $file      = plugin_dir_path(__DIR__) . 'inc/criterios-empleado.php';
+            } else {
+                $criterios = cdb_get_criterios_bar();
+                $file      = plugin_dir_path(__DIR__) . 'inc/criterios-bar.php';
+            }
+
+            if (!isset($criterios[$grupo])) {
+                add_settings_error('cdb_modificar_criterios', 'cdb_grupo_invalido', __('Grupo inválido.', 'cdb-grafica'));
+            } elseif (isset($criterios[$grupo][$slug])) {
+                add_settings_error('cdb_modificar_criterios', 'cdb_slug_existente', __('El slug ya existe en este grupo.', 'cdb-grafica'));
+            } elseif (empty($slug) || empty($label)) {
+                add_settings_error('cdb_modificar_criterios', 'cdb_campos_vacios', __('Por favor completa los campos obligatorios.', 'cdb-grafica'));
+            } else {
+                $criterios[$grupo][$slug] = [
+                    'label'       => $label,
+                    'descripcion' => $desc,
+                ];
+
+                $content = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\nfunction cdb_get_criterios_{$tipo}() {\n    return " . var_export($criterios, true) . ";\n}\n";
+
+                if ( cdb_grafica_ensure_writable( $file ) ) {
+                    cdb_grafica_backup_file( $file );
+                    if ( false === file_put_contents( $file, $content ) ) {
+                        add_settings_error('cdb_modificar_criterios', 'cdb_error_guardar', __('No se pudo guardar el archivo de criterios.', 'cdb-grafica'));
+                    } else {
+                        add_settings_error('cdb_modificar_criterios', 'cdb_criterio_creado', __('Criterio añadido.', 'cdb-grafica'), 'updated');
                     }
                 }
             }
@@ -196,6 +239,40 @@ function cdb_grafica_modificar_criterios_page() {
                             <?php } ?>
                         <?php } ?>
                     <?php } ?>
+                    <?php if ( $add_new && $tab === 'empleado' ) { ?>
+                        <tr>
+                            <td colspan="5">
+                                <form method="post">
+                                    <input type="hidden" name="tipo" value="empleado" />
+                                    <?php wp_nonce_field( 'cdb_guardar_nuevo_criterio', 'cdb_nuevo_criterio_nonce' ); ?>
+                                    <p>
+                                        <label><?php esc_html_e( 'Grupo', 'cdb-grafica' ); ?></label><br />
+                                        <select name="grupo" required>
+                                            <?php foreach ( array_keys( $criterios ) as $g ) { ?>
+                                                <option value="<?php echo esc_attr( $g ); ?>"><?php echo esc_html__( $g, 'cdb-grafica' ); ?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Slug', 'cdb-grafica' ); ?></label><br />
+                                        <input type="text" name="slug" class="regular-text" required />
+                                    </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Etiqueta', 'cdb-grafica' ); ?></label><br />
+                                        <input type="text" name="label" class="regular-text" required />
+                                    </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></label><br />
+                                        <textarea name="descripcion" class="large-text" rows="3"></textarea>
+                                    </p>
+                                    <?php submit_button( __( 'Guardar', 'cdb-grafica' ) ); ?>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                    <tr>
+                        <td colspan="5"><a class="button" href="?page=cdb_modificar_criterios&tab=empleado&add=1"><?php esc_html_e( 'Añadir Criterio', 'cdb-grafica' ); ?></a></td>
+                    </tr>
                 </tbody>
             </table>
             <?php
@@ -247,6 +324,40 @@ function cdb_grafica_modificar_criterios_page() {
                             <?php } ?>
                         <?php } ?>
                     <?php } ?>
+                    <?php if ( $add_new && $tab === 'bar' ) { ?>
+                        <tr>
+                            <td colspan="5">
+                                <form method="post">
+                                    <input type="hidden" name="tipo" value="bar" />
+                                    <?php wp_nonce_field( 'cdb_guardar_nuevo_criterio', 'cdb_nuevo_criterio_nonce' ); ?>
+                                    <p>
+                                        <label><?php esc_html_e( 'Grupo', 'cdb-grafica' ); ?></label><br />
+                                        <select name="grupo" required>
+                                            <?php foreach ( array_keys( $criterios ) as $g ) { ?>
+                                                <option value="<?php echo esc_attr( $g ); ?>"><?php echo esc_html__( $g, 'cdb-grafica' ); ?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Slug', 'cdb-grafica' ); ?></label><br />
+                                        <input type="text" name="slug" class="regular-text" required />
+                                    </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Etiqueta', 'cdb-grafica' ); ?></label><br />
+                                        <input type="text" name="label" class="regular-text" required />
+                                    </p>
+                                    <p>
+                                        <label><?php esc_html_e( 'Descripción', 'cdb-grafica' ); ?></label><br />
+                                        <textarea name="descripcion" class="large-text" rows="3"></textarea>
+                                    </p>
+                                    <?php submit_button( __( 'Guardar', 'cdb-grafica' ) ); ?>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                    <tr>
+                        <td colspan="5"><a class="button" href="?page=cdb_modificar_criterios&tab=bar&add=1"><?php esc_html_e( 'Añadir Criterio', 'cdb-grafica' ); ?></a></td>
+                    </tr>
                 </tbody>
             </table>
             <?php
