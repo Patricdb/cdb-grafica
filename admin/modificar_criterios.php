@@ -104,6 +104,27 @@ function cdb_grafica_pretty_export( $value, $indent = 0, $trim_first_line = fals
 
     return var_export( $value, true );
 }
+
+/**
+ * Genera el código PHP para los criterios indicados.
+ *
+ * Devuelve un string con la cabecera de apertura, un comentario de
+ * timestamp y la declaración completa de la función que retorna el array
+ * formateado usando {@see cdb_grafica_pretty_export()}.
+ *
+ * @param string $tipo      Identificador del tipo de criterios (bar o empleado).
+ * @param array  $criterios Array de criterios actuales.
+ * @return string Código PHP listo para guardar o descargar.
+ */
+function cdb_grafica_generate_criterios_php( $tipo, array $criterios ) {
+    $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
+    $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
+
+    return "<?php\n" .
+        "if ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\n" .
+        $timestamp .
+        "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
+}
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
@@ -164,10 +185,7 @@ function cdb_grafica_modificar_criterios_page() {
         }
 
         if ( isset( $criterios ) ) {
-            $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
-            $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
-            $content   = "<?php\nif ( ! defined( 'ABSPATH' ) ) { exit; }\n\n" .
-                $timestamp . "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
+            $content = cdb_grafica_generate_criterios_php( $tipo, $criterios );
 
             if ( isset( $_GET['preview'] ) ) {
                 echo '<pre>' . esc_html( $content ) . '</pre>';
@@ -203,9 +221,7 @@ function cdb_grafica_modificar_criterios_page() {
                 $criterios[$grupo][$slug]['label']       = $label;
                 $criterios[$grupo][$slug]['descripcion'] = $desc;
 
-                $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
-                $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
-                $content   = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\n" . $timestamp . "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
+                $content = cdb_grafica_generate_criterios_php( $tipo, $criterios );
 
                 if ( cdb_grafica_ensure_writable( $file ) ) {
                     // Realizar copia de seguridad antes de escribir.
@@ -248,9 +264,7 @@ function cdb_grafica_modificar_criterios_page() {
                     'descripcion' => $desc,
                 ];
 
-                $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
-                $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
-                $content   = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\n" . $timestamp . "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
+                $content = cdb_grafica_generate_criterios_php( $tipo, $criterios );
 
                 if ( cdb_grafica_ensure_writable( $file ) ) {
                     cdb_grafica_backup_file( $file );
