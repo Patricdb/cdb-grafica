@@ -47,11 +47,13 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
     $table_name = $wpdb->prefix . 'grafica_empleado_results';
     $post_id    = get_the_ID();
 
-    // Recuperar todas las entradas para el post actual
-    $results = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM $table_name WHERE post_id = %d", 
-        $post_id
-    ));
+    // Recuperar las calificaciones del post actual con rol definido
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM $table_name WHERE post_id = %d AND user_role IS NOT NULL",
+            $post_id
+        )
+    );
 
     // Inicializar agrupaciones para calcular promedios
     $criterios = cdb_get_criterios_empleado();
@@ -60,25 +62,60 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         $grupos[$grupo_nombre] = array_keys($campos);
     }
 
-    // Calcular promedios por grupo
-    $promedios = [];
+    // Calcular promedios por grupo y por rol
+    $roles_data = [];
+    foreach ($results as $row) {
+        $rol = strtolower($row->user_role);
+        if (!isset($roles_data[$rol])) {
+            $roles_data[$rol] = [];
+        }
+        foreach ($grupos as $grupo_nombre => $campos) {
+            if (!isset($roles_data[$rol][$grupo_nombre])) {
+                $roles_data[$rol][$grupo_nombre] = ['suma' => 0, 'cuenta' => 0];
+            }
+            foreach ($campos as $campo) {
+                if (isset($row->$campo) && 0 != $row->$campo) {
+                    $roles_data[$rol][$grupo_nombre]['suma']   += $row->$campo;
+                    $roles_data[$rol][$grupo_nombre]['cuenta'] += 1;
+                }
+            }
+        }
+    }
+
+    $datasets = [];
+    foreach ($roles_data as $rol => $grupos_info) {
+        $promedios = [];
+        $tiene_valores = false;
+        foreach ($grupos as $grupo_nombre => $campos) {
+            $suma   = $grupos_info[$grupo_nombre]['suma'] ?? 0;
+            $cuenta = $grupos_info[$grupo_nombre]['cuenta'] ?? 0;
+            $promedio = $cuenta > 0 ? round($suma / $cuenta, 1) : 0;
+            if ($cuenta > 0) {
+                $tiene_valores = true;
+            }
+            $promedios[] = $promedio;
+        }
+        if ($tiene_valores) {
+            $datasets[$rol] = $promedios;
+        }
+    }
+
+    // Calcular la puntuación total agregada para meta
+    $promedios_globales = [];
     foreach ($grupos as $grupo_nombre => $campos) {
         $total_grupo = 0;
-        $count = 0;
+        $count       = 0;
         foreach ($results as $row) {
             foreach ($campos as $campo) {
-                // Un valor 0 significa que el criterio se dejó en blanco y no cuenta
                 if (isset($row->$campo) && $row->$campo != 0) {
                     $total_grupo += $row->$campo;
                     $count++;
                 }
             }
         }
-        $promedios[] = $count > 0 ? round($total_grupo / $count, 1) : 0;
+        $promedios_globales[] = $count > 0 ? round($total_grupo / $count, 1) : 0;
     }
-
-    // Calcular la puntuación total
-    $total = round(array_sum($promedios), 1);
+    $total = round(array_sum($promedios_globales), 1);
 
     // Guardar en meta si es post_type=empleado
     if ($post_id && get_post_type($post_id) === 'empleado') {
@@ -93,8 +130,7 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
 
     $data = [
         'labels'    => $siglas,
-        'promedios' => $promedios,
-        'total'     => $total,
+        'datasets'  => $datasets,
     ];
 
     // Obtener colores configurados
@@ -136,16 +172,29 @@ function generar_grafica_empleado_en_frontend() {
             const ctx = document.createElement('canvas');
             dataElement.appendChild(ctx);
 
+            const colores = {
+                empleado: 'blue',
+                empleador: 'green',
+                tutor: 'red'
+            };
+
             const chartData = {
                 labels: data.labels,
-                datasets: [{
-                    label: `Puntuación Total: ${data.total}`,
-                    data: data.promedios,
-                    backgroundColor: dataElement.dataset.backgroundColor,
-                    borderColor: dataElement.dataset.borderColor,
-                    borderWidth: 2
-                }]
+                datasets: []
             };
+
+            if (data.datasets) {
+                Object.keys(data.datasets).forEach(function (rol) {
+                    const valores = data.datasets[rol];
+                    chartData.datasets.push({
+                        label: rol,
+                        data: valores,
+                        backgroundColor: colores[rol] || 'gray',
+                        borderColor: colores[rol] || 'gray',
+                        borderWidth: 2
+                    });
+                });
+            }
 
             const options = {
                 responsive: true,
