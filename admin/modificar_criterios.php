@@ -76,13 +76,19 @@ function cdb_grafica_modificar_criterios_page() {
 
 // Definir grupos de criterios reales
 function cdb_grafica_get_criterios_organizados($grafica_tipo) {
-    global $wpdb;
     if ($grafica_tipo === 'bar') {
         $grupos = [
                     ];
     } elseif ($grafica_tipo === 'empleado') {
-        $grupos = [
-                    ];
+        $criterios = cdb_get_criterios_empleado();
+        $grupos    = [];
+        foreach ($criterios as $grupo => $items) {
+            $labels = [];
+            foreach ($items as $info) {
+                $labels[] = $info['label'];
+            }
+            $grupos[$grupo] = $labels;
+        }
     } else {
         $grupos = [];
     }

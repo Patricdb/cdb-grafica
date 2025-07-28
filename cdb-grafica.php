@@ -30,6 +30,7 @@ require_once plugin_dir_path(__FILE__) . 'admin/modificar_colores.php';
 
 // Requerir archivos de CPT y gráficas
 require_once __DIR__ . '/inc/grafica-bar.php';
+require_once __DIR__ . '/inc/criterios-empleado.php';
 require_once __DIR__ . '/inc/grafica-empleado.php';
 // require_once __DIR__ . '/inc/shared-functions.php';
 
