@@ -320,7 +320,17 @@ add_shortcode('grafica_bar_form', function($atts) {
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
         <?php wp_nonce_field('submit_grafica_bar', 'grafica_bar_nonce'); ?>
 
-        <?php foreach ($grupos as $grupo_nombre => $campos): ?>
+        <?php foreach ($grupos as $grupo_nombre => $campos):
+            $campos_visibles = array_filter(
+                $campos,
+                static function ($info) {
+                    return ! isset($info['visible']) || $info['visible'];
+                }
+            );
+            if (empty($campos_visibles)) {
+                continue;
+            }
+        ?>
             <div class="accordion">
                 <div class="accordion-header">
                     <button type="button" class="accordion-toggle">
@@ -328,7 +338,7 @@ add_shortcode('grafica_bar_form', function($atts) {
                     </button>
                 </div>
                 <div class="accordion-content" style="display: none;">
-                    <?php foreach ($campos as $campo_slug => $campo_info): 
+                    <?php foreach ($campos_visibles as $campo_slug => $campo_info):
                         $valor_existente = isset($existing_data[$campo_slug]) ? $existing_data[$campo_slug] : '';
                     ?>
                     <label for="<?php echo esc_attr($campo_slug); ?>">
