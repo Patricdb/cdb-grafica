@@ -148,3 +148,27 @@ msgstr ""
 #: cdb-grafica.php:74
 msgid "No se encontraron datos."
 msgstr ""
+
+#: admin/modificar_criterios.php
+msgid "Criterio actualizado."
+msgstr ""
+
+#: admin/modificar_criterios.php
+msgid "Criterio añadido."
+msgstr ""
+
+#: admin/modificar_criterios.php
+msgid "El slug ya existe en este grupo."
+msgstr ""
+
+#: admin/modificar_criterios.php
+msgid "Grupo inválido."
+msgstr ""
+
+#: admin/modificar_criterios.php
+msgid "Por favor completa los campos obligatorios."
+msgstr ""
+
+#: admin/modificar_criterios.php
+msgid "Añadir Criterio"
+msgstr ""
