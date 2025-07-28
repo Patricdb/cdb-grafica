@@ -195,6 +195,7 @@ function grafica_empleado_create_table() {
         direccion FLOAT NOT NULL,
         camarero FLOAT NOT NULL,
         venta FLOAT NOT NULL,
+        ritmo_sala FLOAT NOT NULL,
         satisfaccion FLOAT NOT NULL,
         cooperacion FLOAT NOT NULL,
         orden FLOAT NOT NULL,
