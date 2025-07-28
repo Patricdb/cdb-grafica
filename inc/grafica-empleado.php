@@ -86,8 +86,13 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
     }
 
     // Datos para la gráfica
+    // Extraemos solo las siglas (clave antes del espacio o paréntesis)
+    $siglas = array_map(function ($grupo) {
+        return strtok($grupo, ' ');
+    }, array_keys($grupos));
+
     $data = [
-        'labels'    => array_keys($grupos),
+        'labels'    => $siglas,
         'promedios' => $promedios,
         'total'     => $total,
     ];
