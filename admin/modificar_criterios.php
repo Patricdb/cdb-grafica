@@ -110,6 +110,25 @@ function cdb_grafica_modificar_criterios_page() {
     $edit_slug  = isset($_GET['edit_slug']) ? sanitize_text_field($_GET['edit_slug']) : '';
     $add_new    = isset($_GET['add']) ? sanitize_text_field($_GET['add']) : '';
 
+    // Permite la descarga manual del archivo de criterios actualizado.
+    if ( isset( $_GET['download'] ) && current_user_can( 'manage_options' ) ) {
+        $download = sanitize_text_field( $_GET['download'] );
+        if ( 'bar' === $download ) {
+            $file     = plugin_dir_path( __DIR__ ) . 'inc/criterios-bar.php';
+            $filename = 'criterios-bar.php';
+        } elseif ( 'empleado' === $download ) {
+            $file     = plugin_dir_path( __DIR__ ) . 'inc/criterios-empleado.php';
+            $filename = 'criterios-empleado.php';
+        }
+
+        if ( isset( $filename ) && file_exists( $file ) ) {
+            header( 'Content-Type: application/octet-stream' );
+            header( 'Content-Disposition: attachment; filename=' . basename( $filename ) );
+            readfile( $file );
+            exit;
+        }
+    }
+
     if (isset($_POST['cdb_edit_criterio_nonce']) && wp_verify_nonce($_POST['cdb_edit_criterio_nonce'], 'cdb_guardar_criterio')) {
         if (current_user_can('manage_options')) {
             $tipo   = sanitize_text_field($_POST['tipo']);
@@ -190,6 +209,14 @@ function cdb_grafica_modificar_criterios_page() {
     <div class="wrap">
         <h1><?php esc_html_e( 'Modificar Criterios', 'cdb-grafica' ); ?></h1>
         <?php settings_errors('cdb_modificar_criterios'); ?>
+        <?php if ( current_user_can( 'manage_options' ) ) : ?>
+            <div class="notice notice-warning" style="margin-top: 15px;">
+                <p><?php esc_html_e( 'IMPORTANTE: Los cambios realizados aquí modifican archivos PHP directamente en el servidor. Antes de desplegar una nueva versión desde el repositorio, descarga el archivo actualizado y súbelo manualmente a GitHub para evitar la pérdida de cambios.', 'cdb-grafica' ); ?></p>
+                <p>
+                    <a class="button" href="<?php echo esc_url( add_query_arg( [ 'page' => 'cdb_modificar_criterios', 'tab' => $tab, 'download' => $tab ], admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'Descargar criterios actualizados', 'cdb-grafica' ); ?></a>
+                </p>
+            </div>
+        <?php endif; ?>
         <h2 class="nav-tab-wrapper">
             <a href="?page=cdb_modificar_criterios&tab=bar" class="nav-tab <?php echo ($tab == 'bar') ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Bar', 'cdb-grafica' ); ?></a>
             <a href="?page=cdb_modificar_criterios&tab=empleado" class="nav-tab <?php echo ($tab == 'empleado') ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Empleado', 'cdb-grafica' ); ?></a>
