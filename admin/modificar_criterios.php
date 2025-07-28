@@ -156,17 +156,29 @@ function cdb_grafica_modificar_criterios_page() {
     if ( isset( $_GET['download'] ) && current_user_can( 'manage_options' ) ) {
         $download = sanitize_text_field( $_GET['download'] );
         if ( 'bar' === $download ) {
-            $file     = plugin_dir_path( __DIR__ ) . 'inc/criterios-bar.php';
-            $filename = 'criterios-bar.php';
+            $criterios = cdb_get_criterios_bar();
+            $tipo      = 'bar';
         } elseif ( 'empleado' === $download ) {
-            $file     = plugin_dir_path( __DIR__ ) . 'inc/criterios-empleado.php';
-            $filename = 'criterios-empleado.php';
+            $criterios = cdb_get_criterios_empleado();
+            $tipo      = 'empleado';
         }
 
-        if ( isset( $filename ) && file_exists( $file ) ) {
+        if ( isset( $criterios ) ) {
+            $pretty    = cdb_grafica_pretty_export( $criterios, 1, true );
+            $timestamp = '// Archivo generado: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
+            $content   = "<?php\nif ( ! defined( 'ABSPATH' ) ) { exit; }\n\n" .
+                $timestamp . "function cdb_get_criterios_{$tipo}() {\n    return {$pretty};\n}\n";
+
+            if ( isset( $_GET['preview'] ) ) {
+                echo '<pre>' . esc_html( $content ) . '</pre>';
+                $download_url = esc_url( remove_query_arg( 'preview' ) );
+                echo '<p><a class="button" href="' . $download_url . '">' . esc_html__( 'Descargar archivo', 'cdb-grafica' ) . '</a></p>';
+                exit;
+            }
+
             header( 'Content-Type: application/octet-stream' );
-            header( 'Content-Disposition: attachment; filename=' . basename( $filename ) );
-            readfile( $file );
+            header( 'Content-Disposition: attachment; filename=criterios-' . $tipo . '.php' );
+            echo $content;
             exit;
         }
     }
