@@ -4,8 +4,3 @@
 .rgba-alpha input {
     width: 100%;
 }
-.rgba-alpha label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}

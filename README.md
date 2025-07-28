@@ -21,13 +21,7 @@ Si se deja un criterio sin valorar, la puntuación guardada es 0 y no se tendrá
 Dentro del menú **CdB Gráfica** se encuentra el submenú **Configurar Colores**. Desde esta página puedes modificar los colores utilizados en las gráficas:
 
 - **Bar – Color de fondo** y **Bar – Color de borde** definen el aspecto del dataset de bares.
-- En la sección **Gráfica Empleado** puedes ajustar:
-  - **Valores aportados por los Empleados – Color de fondo**
-  - **Valores aportados por los Empleados – Color de borde**
-  - **Valores aportados por los Empleadores – Color de fondo**
-  - **Valores aportados por los Empleadores – Color de borde**
-  - **Valores aportados por los Tutores – Color de fondo**
-  - **Valores aportados por los Tutores – Color de borde**
+- **Empleado – Color de fondo** y **Empleado – Color de borde** controlan el dataset de empleados.
 
 Cada selector cuenta con un deslizador *Alpha* que permite ajustar la transparencia del color. Los valores se guardan en formato `rgba`, por lo que puedes elegir tonalidades semitransparentes que se aplicarán directamente en las gráficas.
 

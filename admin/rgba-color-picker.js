@@ -30,8 +30,7 @@
 
             var $container = $input.closest('.wp-picker-container');
             var $holder = $container.find('.wp-picker-holder');
-            var label = window.cdbGraficaI18n ? window.cdbGraficaI18n.alphaLabel : 'Alpha';
-            var $alphaWrap = $('<div class="rgba-alpha"><label>'+label+' <input type="range" min="0" max="1" step="0.01" value="'+rgba.a+'" /></label></div>');
+            var $alphaWrap = $('<div class="rgba-alpha"><input type="range" min="0" max="1" step="0.01" value="'+rgba.a+'" /></div>');
             $alphaWrap.insertAfter($holder);
 
             $alphaWrap.on('input', 'input', function(){
