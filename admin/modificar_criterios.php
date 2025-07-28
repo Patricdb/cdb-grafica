@@ -2,6 +2,30 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+
+/**
+ * Comprueba si una ruta es escribible antes de guardar cambios.
+ *
+ * @param string $path Ruta al archivo que se desea modificar.
+ * @return bool True si el archivo es escribible, false en caso contrario.
+ */
+function cdb_grafica_ensure_writable( $path ) {
+    if ( ! is_writable( $path ) ) {
+        $message = sprintf(
+            __( 'El archivo %s no es escribible.', 'cdb-grafica' ),
+            esc_html( $path )
+        );
+
+        if ( is_admin() ) {
+            add_settings_error( 'cdb_modificar_criterios', 'cdb_error_permisos', $message );
+        } else {
+            wp_die( $message );
+        }
+        return false;
+    }
+
+    return true;
+}
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
@@ -71,15 +95,13 @@ function cdb_grafica_modificar_criterios_page() {
 
                 $content = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\nfunction cdb_get_criterios_{$tipo}() {\n    return " . var_export($criterios, true) . ";\n}\n";
 
-                if (is_writable($file)) {
-                    @copy($file, $file . '.bak');
-                    if (false === file_put_contents($file, $content)) {
-                        add_settings_error('cdb_modificar_criterios', 'cdb_error_guardar', __('No se pudo guardar el archivo de criterios.', 'cdb-grafica'));
+                if ( cdb_grafica_ensure_writable( $file ) ) {
+                    @copy( $file, $file . '.bak' );
+                    if ( false === file_put_contents( $file, $content ) ) {
+                        add_settings_error( 'cdb_modificar_criterios', 'cdb_error_guardar', __( 'No se pudo guardar el archivo de criterios.', 'cdb-grafica' ) );
                     } else {
-                        add_settings_error('cdb_modificar_criterios', 'cdb_criterio_actualizado', __('Criterio actualizado.', 'cdb-grafica'), 'updated');
+                        add_settings_error( 'cdb_modificar_criterios', 'cdb_criterio_actualizado', __( 'Criterio actualizado.', 'cdb-grafica' ), 'updated' );
                     }
-                } else {
-                    add_settings_error('cdb_modificar_criterios', 'cdb_error_permisos', __('El archivo de criterios no es escribible.', 'cdb-grafica'));
                 }
             }
         }
