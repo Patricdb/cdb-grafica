@@ -26,6 +26,42 @@ function cdb_grafica_ensure_writable( $path ) {
 
     return true;
 }
+
+/**
+ * Realiza una copia de seguridad manteniendo un número limitado de archivos.
+ *
+ * El archivo original se copia con un sufijo de fecha y hora antes de ser
+ * sobrescrito. Solo se conservarán las copias más recientes para evitar
+ * acumulación de archivos en el sistema.
+ *
+ * @param string $file        Ruta del archivo a respaldar.
+ * @param int    $max_backups Número máximo de copias a conservar.
+ * @return void
+ */
+function cdb_grafica_backup_file( $file, $max_backups = 5 ) {
+    $dir       = dirname( $file );
+    $base      = basename( $file );
+    $timestamp = gmdate( 'Ymd-His' );
+    $backup    = "$dir/{$base}.{$timestamp}.bak";
+
+    @copy( $file, $backup );
+
+    // Elimina copias antiguas si exceden el máximo permitido.
+    $pattern   = $dir . '/' . $base . '.*.bak';
+    $files     = glob( $pattern );
+    if ( is_array( $files ) && count( $files ) > $max_backups ) {
+        usort(
+            $files,
+            static function ( $a, $b ) {
+                return filemtime( $b ) <=> filemtime( $a );
+            }
+        );
+        $old_files = array_slice( $files, $max_backups );
+        foreach ( $old_files as $old ) {
+            @unlink( $old );
+        }
+    }
+}
 // Agregar el menú principal del plugin en el panel de administración
 function cdb_grafica_menu() {
     add_menu_page(
@@ -96,7 +132,8 @@ function cdb_grafica_modificar_criterios_page() {
                 $content = "<?php\nif ( ! defined( 'ABSPATH' ) ) {\n    exit;\n}\n\nfunction cdb_get_criterios_{$tipo}() {\n    return " . var_export($criterios, true) . ";\n}\n";
 
                 if ( cdb_grafica_ensure_writable( $file ) ) {
-                    @copy( $file, $file . '.bak' );
+                    // Realizar copia de seguridad antes de escribir.
+                    cdb_grafica_backup_file( $file );
                     if ( false === file_put_contents( $file, $content ) ) {
                         add_settings_error( 'cdb_modificar_criterios', 'cdb_error_guardar', __( 'No se pudo guardar el archivo de criterios.', 'cdb-grafica' ) );
                     } else {
