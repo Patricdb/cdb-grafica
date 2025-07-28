@@ -199,6 +199,7 @@ function grafica_bar_create_table() {
         id BIGINT(20) NOT NULL AUTO_INCREMENT,
         post_id BIGINT(20) NOT NULL,
         user_id BIGINT(20) NOT NULL,
+        user_role VARCHAR(50) NOT NULL,
         relacion_superiores FLOAT NOT NULL,
         salario FLOAT NOT NULL,
         espacio_seguro FLOAT NOT NULL,
@@ -439,10 +440,18 @@ if (in_array('empleado', $roles)) {
         // Otros roles sin restricción
 
         // Preparar datos para insertar o actualizar
-        $data   = ['post_id' => $post_id, 'user_id' => $user_id];
+        $data   = [
+            'post_id' => $post_id,
+            'user_id' => $user_id,
+        ];
         $fields = $wpdb->get_col("SHOW COLUMNS FROM $table_name");
+
+        if (in_array('user_role', $fields, true) && !empty($user->roles)) {
+            $data['user_role'] = sanitize_text_field($user->roles[0]);
+        }
+
         foreach ($fields as $field) {
-            if ($field === 'id' || $field === 'created_at') {
+            if ($field === 'id' || $field === 'created_at' || $field === 'user_role') {
                 continue; // Ignore auto fields
             }
             if (isset($_POST[$field])) {
