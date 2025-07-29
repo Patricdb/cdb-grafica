@@ -18,11 +18,6 @@ function cdb_get_criterios_empleado() {
                 'descripcion' => 'Atender y servir a los clientes en sala.',
                 'visible'     => true,
             ],
-            'ritmo_sala' => [
-                'label'       => 'Ritmo',
-                'descripcion' => 'Gestión y ritmo del servicio.',
-                'visible'     => true,
-              ],
         ],
         'TES (Técnica Sala)' => [
             'venta' => [
@@ -30,6 +25,11 @@ function cdb_get_criterios_empleado() {
                 'descripcion' => 'Capacidades comerciales de venta.',
                 'visible'     => true,
             ],
+            'ritmo_sala' => [
+                'label'       => 'Ritmo',
+                'descripcion' => 'Gestión y ritmo del servicio.',
+                'visible'     => true,
+              ],
         ],
         'ATC (Atención al Cliente)' => [
             'satisfaccion' => [
