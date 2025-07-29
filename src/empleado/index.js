@@ -31,19 +31,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (graficaEmpleadoElement && ctx) {
         const data = JSON.parse(graficaEmpleadoElement.dataset.valores);
+        const colores = JSON.parse(graficaEmpleadoElement.dataset.roleColors || "{}");
 
         const chartData = {
             labels: data.labels,
-            datasets: [
-                {
-                    label: `Puntuación Total: ${data.total.toFixed(1)}`, // Limitar a 1 decimal
-                    data: data.promedios,
-                    backgroundColor: graficaEmpleadoElement.dataset.backgroundColor || "rgba(75, 192, 192, 0.2)",
-                    borderColor: graficaEmpleadoElement.dataset.borderColor || "rgba(75, 192, 192, 1)",
-                    borderWidth: 2,
-                },
-            ],
+            datasets: []
         };
+
+        if (Array.isArray(data.datasets)) {
+            data.datasets.forEach((dataset) => {
+                const cfg = colores[dataset.role] || {};
+                chartData.datasets.push({
+                    label: dataset.label,
+                    data: dataset.data,
+                    backgroundColor: cfg.background || "gray",
+                    borderColor: cfg.border || "gray",
+                    borderWidth: 2,
+                });
+            });
+        }
 
         new Chart(ctx, {
             type: "radar",
