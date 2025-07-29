@@ -4,6 +4,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 // inc/grafica-empleado.php
 
+/**
+ * Devuelve el nombre pluralizado de un rol de usuario.
+ */
+function cdb_empleado_plural_role( $role ) {
+    switch ( strtolower( $role ) ) {
+        case 'tutor':
+            return 'Tutores';
+        case 'empleador':
+            return 'Empleadores';
+        case 'empleado':
+        default:
+            return 'Empleados';
+    }
+}
+
 // ------------------------------------------------------------------
 // 1. Registro del bloque "grafica-empleado".
 // ------------------------------------------------------------------
@@ -83,20 +98,27 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
     }
 
     $datasets = [];
-    foreach ($roles_data as $rol => $grupos_info) {
-        $promedios = [];
+    foreach ( $roles_data as $rol => $grupos_info ) {
+        $promedios     = [];
         $tiene_valores = false;
-        foreach ($grupos as $grupo_nombre => $campos) {
-            $suma   = $grupos_info[$grupo_nombre]['suma'] ?? 0;
-            $cuenta = $grupos_info[$grupo_nombre]['cuenta'] ?? 0;
-            $promedio = $cuenta > 0 ? round($suma / $cuenta, 1) : 0;
-            if ($cuenta > 0) {
+
+        foreach ( $grupos as $grupo_nombre => $campos ) {
+            $suma     = $grupos_info[ $grupo_nombre ]['suma'] ?? 0;
+            $cuenta   = $grupos_info[ $grupo_nombre ]['cuenta'] ?? 0;
+            $promedio = $cuenta > 0 ? round( $suma / $cuenta, 1 ) : 0;
+            if ( $cuenta > 0 ) {
                 $tiene_valores = true;
             }
             $promedios[] = $promedio;
         }
-        if ($tiene_valores) {
-            $datasets[$rol] = $promedios;
+
+        if ( $tiene_valores ) {
+            $total_rol = array_sum( $promedios );
+            $datasets[] = [
+                'role'  => $rol,
+                'data'  => $promedios,
+                'label' => cdb_empleado_plural_role( $rol ) . ' – Puntuación Total: ' . $total_rol,
+            ];
         }
     }
 
@@ -200,13 +222,12 @@ function generar_grafica_empleado_en_frontend() {
                 datasets: []
             };
 
-            if (data.datasets) {
-                Object.keys(data.datasets).forEach(function (rol) {
-                    const valores = data.datasets[rol];
-                    const cfg = colores[rol] || {};
+            if (Array.isArray(data.datasets)) {
+                data.datasets.forEach(function (ds) {
+                    const cfg = colores[ds.role] || {};
                     chartData.datasets.push({
-                        label: rol,
-                        data: valores,
+                        label: ds.label,
+                        data: ds.data,
                         backgroundColor: cfg.background || 'gray',
                         borderColor: cfg.border || 'gray',
                         borderWidth: 2
