@@ -613,6 +613,9 @@ if (in_array('empleador', $roles)) {
             $wpdb->update($table_name, $data, ['id' => $existing_row]);
         } else {
             $wpdb->insert($table_name, $data);
+            if ( ! empty( $wpdb->insert_id ) ) {
+                cdb_mails_send_new_review_notification( $wpdb->insert_id, 'empleado' );
+            }
         }
 
         // Redirigir
