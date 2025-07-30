@@ -469,6 +469,9 @@ if (in_array('empleado', $roles)) {
             $wpdb->update($table_name, $data, ['id' => $existing_row]);
         } else {
             $wpdb->insert($table_name, $data);
+            if ( ! empty( $wpdb->insert_id ) ) {
+                cdb_mails_send_new_review_notification( $wpdb->insert_id, 'bar' );
+            }
         }
 
         wp_safe_redirect( get_permalink( $post_id ) );
