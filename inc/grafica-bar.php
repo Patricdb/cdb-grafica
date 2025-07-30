@@ -467,11 +467,16 @@ if (in_array('empleado', $roles)) {
 
         if ($existing_row) {
             $wpdb->update($table_name, $data, ['id' => $existing_row]);
+            $row_id = $existing_row;
+            $accion = 'actualizacion';
         } else {
             $wpdb->insert($table_name, $data);
-            if ( ! empty( $wpdb->insert_id ) ) {
-                cdb_mails_send_new_review_notification( $wpdb->insert_id, 'bar' );
-            }
+            $row_id = $wpdb->insert_id;
+            $accion = 'nueva';
+        }
+
+        if ( ! empty( $row_id ) ) {
+            cdb_mails_send_new_review_notification( $row_id, 'bar', $accion );
         }
 
         wp_safe_redirect( get_permalink( $post_id ) );
