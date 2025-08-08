@@ -2,6 +2,7 @@
 /* jshint esversion: 6 */
 
 import { registerBlockType } from '@wordpress/blocks';
+import { __ } from '@wordpress/i18n';
 
 registerBlockType('cdb/grafica-bar', {
     title: 'Gráfica Bar',
@@ -36,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: data.labels,
             datasets: [
                 {
-                    label: `Puntuación Total: ${data.total.toFixed(1)}`, // Limitar a 1 decimal
+                    label: `${ __( 'Puntuación de Gráfica', 'cdb-grafica' ) }: ${data.total.toFixed(1)}`, // Limitar a 1 decimal
                     data: data.promedios,
                     backgroundColor: graficaBarElement.dataset.backgroundColor || "rgba(75, 192, 192, 0.2)",
                     borderColor: graficaBarElement.dataset.borderColor || "rgba(75, 192, 192, 1)",

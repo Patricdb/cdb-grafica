@@ -148,7 +148,7 @@ function generar_grafica_en_bloque() {
             const chartData = {
                 labels: data.labels,
                 datasets: [{
-                    label: `Puntuación Total: ${data.total}`,
+                    label: `<?php echo esc_js( __( 'Puntuación de Gráfica', 'cdb-grafica' ) ); ?>: ${data.total}`,
                     data: data.promedios,
                     backgroundColor: dataElement.dataset.backgroundColor,
                     borderColor: dataElement.dataset.borderColor,
