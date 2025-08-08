@@ -117,7 +117,7 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
             $datasets[] = [
                 'role'  => $rol,
                 'data'  => $promedios,
-                'label' => cdb_empleado_plural_role( $rol ) . ' – Puntuación Total: ' . $total_rol,
+                'label' => cdb_empleado_plural_role( $rol ) . ' – ' . __( 'Puntuación de Gráfica', 'cdb-grafica' ) . ': ' . $total_rol,
             ];
         }
     }
