@@ -35,6 +35,14 @@ require_once __DIR__ . '/inc/criterios-empleado.php';
 require_once __DIR__ . '/inc/grafica-empleado.php';
 // require_once __DIR__ . '/inc/shared-functions.php';
 
+// Helpers públicos cargados tras inicializar plugins.
+add_action(
+    'plugins_loaded',
+    function() {
+        require_once __DIR__ . '/inc/public-helpers.php';
+    }
+);
+
 
 // Función global para calcular el promedio de un grupo de campos.
 if (!function_exists('calcular_promedio')) {
