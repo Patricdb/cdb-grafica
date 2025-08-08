@@ -21,12 +21,6 @@ function cdb_grafica_load_textdomain() {
 }
 add_action( 'plugins_loaded', 'cdb_grafica_load_textdomain' );
 
-// Cargar funciones públicas reutilizables.
-function cdb_grafica_load_public_helpers() {
-    require_once __DIR__ . '/inc/public-helpers.php';
-}
-add_action( 'plugins_loaded', 'cdb_grafica_load_public_helpers' );
-
 // Hooks de activación para crear tablas
 register_activation_hook(__FILE__, 'grafica_bar_create_table');
 register_activation_hook(__FILE__, 'grafica_empleado_create_table');
