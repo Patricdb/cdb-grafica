@@ -623,6 +623,14 @@ if (in_array('empleador', $roles)) {
             cdb_mails_send_new_review_notification( $row_id, 'empleado', $accion );
         }
 
+        /**
+         * Acciones tras guardar/actualizar una valoración.
+         * Permite a otros plugins reaccionar y se invalida la caché interna.
+         */
+        do_action( 'cdb_grafica_after_save', (int) $post_id );
+        delete_transient( "cdb_grafica_role_scores_{$post_id}" );
+        delete_transient( "cdb_grafica_last_rating_{$post_id}" );
+
         // Redirigir
         wp_safe_redirect( get_permalink( $post_id ) );
         exit;

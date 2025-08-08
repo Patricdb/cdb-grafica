@@ -30,3 +30,48 @@ Al guardar los cambios, los nuevos valores se aplican automáticamente a las gr�
 ## Desinstalación
 
 Al desinstalar el plugin se eliminan las tablas creadas para almacenar los resultados.
+
+## API Pública
+
+El plugin expone dos helpers para que otros plugins (p.ej. `cdb-form`) puedan obtener
+información de las valoraciones de empleados sin replicar la lógica de las gráficas.
+
+### Obtener fecha de última valoración
+
+```php
+string|null cdb_grafica_get_last_rating_datetime( int $empleado_id )
+```
+
+Devuelve la fecha/hora (`Y-m-d H:i:s`) de la última valoración registrada para el
+empleado o `null` si no existen datos.
+
+### Obtener puntuaciones por rol
+
+```php
+array cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] )
+```
+
+Retorna los totales de cada rol (`empleado`, `empleador`, `tutor`) con un decimal.
+Si se pasa `['with_detail' => true]` incluye el desglose por grupos.
+
+```php
+[
+  'empleado'  => 33.1,
+  'empleador' => 28.7,
+  'tutor'     => null,
+  'detalle'   => [
+     'empleado' => ['grupos' => ['DIE' => 7.5, 'SAL' => 6.2], 'total' => 33.1],
+     'empleador'=> [...]
+  ]
+]
+```
+
+### Transients y filtros
+
+- `cdb_grafica_last_rating_{ID}` guarda la fecha de última valoración.
+- `cdb_grafica_role_scores_{ID}` almacena los totales por rol.
+- Filtros disponibles: `cdb_grafica_last_rating_args`,
+  `cdb_grafica_scores_args`, `cdb_grafica_scores_ttl`.
+
+Tras guardar una valoración se ejecuta el hook `cdb_grafica_after_save` y se
+invalidan los transients anteriores.
