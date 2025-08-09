@@ -33,45 +33,35 @@ Al desinstalar el plugin se eliminan las tablas creadas para almacenar los resul
 
 ## API Pública
 
-El plugin expone dos helpers para que otros plugins (p.ej. `cdb-form`) puedan obtener
-información de las valoraciones de empleados sin replicar la lógica de las gráficas.
-
-### Obtener fecha de última valoración
-
-```php
-string|null cdb_grafica_get_last_rating_datetime( int $empleado_id )
-```
-
-Devuelve la fecha/hora (`Y-m-d H:i:s`) de la última valoración registrada para el
-empleado o `null` si no existen datos.
-
-### Obtener puntuaciones por rol
+El plugin expone dos helpers para que otros plugins (p.ej. `cdb-form`) puedan
+obtener información de las valoraciones de empleados sin replicar la lógica de
+las gráficas.
 
 ```php
-array cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] )
+$scores = cdb_grafica_get_scores_by_role( $empleado_id );
+$ultima = cdb_grafica_get_last_rating_datetime( $empleado_id );
 ```
 
-Retorna los totales de cada rol (`empleado`, `empleador`, `tutor`) con un decimal.
-Si se pasa `['with_detail' => true]` incluye el desglose por grupos.
+### `cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): array`
 
-```php
-[
-  'empleado'  => 33.1,
-  'empleador' => 28.7,
-  'tutor'     => null,
-  'detalle'   => [
-     'empleado' => ['grupos' => ['DIE' => 7.5, 'SAL' => 6.2], 'total' => 33.1],
-     'empleador'=> [...]
-  ]
-]
-```
+Devuelve un arreglo con los totales por rol (`empleado`, `empleador`, `tutor`)
+redondeados a un decimal o `0.0` si no hay datos. Acepta los argumentos:
+
+- `bypass_cache` (`bool`) para ignorar los transients.
+- `with_raw` (`bool`) para incluir el detalle intermedio ya calculado.
+
+### `cdb_grafica_get_last_rating_datetime( int $empleado_id ): ?string`
+
+Retorna la fecha/hora (`Y-m-d H:i:s`) de la última valoración registrada o
+`null` si no existen datos.
 
 ### Transients y filtros
 
-- `cdb_grafica_last_rating_{ID}` guarda la fecha de última valoración.
-- `cdb_grafica_role_scores_{ID}` almacena los totales por rol.
-- Filtros disponibles: `cdb_grafica_last_rating_args`,
-  `cdb_grafica_scores_args`, `cdb_grafica_scores_ttl`.
+- `cdb_grafica_scores_ttl` y `cdb_grafica_last_rating_ttl` permiten ajustar los
+  TTL de los transients (por defecto 600 segundos).
+- `cdb_grafica_transient_key` filtra las claves usadas para almacenar los
+  resultados (`cdbg_scores_{ID}` y `cdbg_last_{ID}`).
+- Otros filtros: `cdb_grafica_scores_args`, `cdb_grafica_last_rating_args`.
 
-Tras guardar una valoración se ejecuta el hook `cdb_grafica_after_save` y se
-invalidan los transients anteriores.
+Tras guardar una valoración se ejecuta el hook `cdb_grafica_after_save`, que
+borra los transients anteriores.
