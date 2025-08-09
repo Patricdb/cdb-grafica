@@ -14,7 +14,7 @@ function cdb_grafica_get_last_rating_datetime( int $empleado_id ): ?string {
         return null;
     }
 
-    $cache_key = "cdb_grafica_last_rating_{$empleado_id}";
+    $cache_key = apply_filters( 'cdb_grafica_transient_key', "cdbg_last_{$empleado_id}", $empleado_id, 'last' );
     $cached    = get_transient( $cache_key );
     if ( false !== $cached ) {
         return '' === $cached ? null : $cached;
@@ -38,7 +38,8 @@ function cdb_grafica_get_last_rating_datetime( int $empleado_id ): ?string {
 
     $datetime = $wpdb->get_var( $wpdb->prepare( $sql, $empleado_id ) );
 
-    set_transient( $cache_key, $datetime ? $datetime : '', 600 );
+    $ttl = (int) apply_filters( 'cdb_grafica_last_rating_ttl', 600, $empleado_id );
+    set_transient( $cache_key, $datetime ? $datetime : '', $ttl );
 
     return $datetime ?: null;
 }
@@ -47,26 +48,26 @@ function cdb_grafica_get_last_rating_datetime( int $empleado_id ): ?string {
  * Devuelve totales de puntuación por rol y detalle opcional por grupos.
  *
  * @param int   $empleado_id ID del empleado.
- * @param array $args        Opciones de consulta: with_detail, bypass_cache.
+ * @param array $args        Opciones: with_raw, bypass_cache.
  * @return array             Puntuaciones por rol y detalle si se solicita.
  */
 function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): array {
     $defaults = [
-        'with_detail'  => false,
         'bypass_cache' => false,
+        'with_raw'     => false,
     ];
     $args = wp_parse_args( $args, $defaults );
 
-    $resultado_base = [ 'empleado' => null, 'empleador' => null, 'tutor' => null ];
+    $resultado_base = [ 'empleado' => 0.0, 'empleador' => 0.0, 'tutor' => 0.0 ];
 
     if ( $empleado_id <= 0 ) {
-        if ( $args['with_detail'] ) {
-            $resultado_base['detalle'] = [];
+        if ( $args['with_raw'] ) {
+            $resultado_base['raw'] = [];
         }
         return $resultado_base;
     }
 
-    $transient_key = "cdb_grafica_role_scores_{$empleado_id}";
+    $transient_key = apply_filters( 'cdb_grafica_transient_key', "cdbg_scores_{$empleado_id}", $empleado_id, 'scores' );
     if ( ! $args['bypass_cache'] ) {
         $cached = get_transient( $transient_key );
         if ( false !== $cached ) {
@@ -86,7 +87,7 @@ function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): a
             $columnas[] = $campo_slug;
         }
     }
-    $columnas   = array_unique( $columnas );
+    $columnas    = array_unique( $columnas );
     $select_cols = implode( ', ', array_merge( $columnas, [ 'created_at', 'user_role' ] ) );
 
     $roles     = [ 'empleado', 'empleador', 'tutor' ];
@@ -109,9 +110,8 @@ function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): a
 
         $rows = $wpdb->get_results( $wpdb->prepare( $sql, $empleado_id, $rol ) );
         if ( empty( $rows ) ) {
-            $resultado[ $rol ] = null;
-            if ( $args['with_detail'] ) {
-                $detalle[ $rol ] = [ 'grupos' => [], 'total' => null ];
+            if ( $args['with_raw'] ) {
+                $detalle[ $rol ] = [ 'grupos' => [], 'total' => 0.0 ];
             }
             continue;
         }
@@ -124,7 +124,7 @@ function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): a
                 }
                 foreach ( $campos as $campo ) {
                     if ( isset( $row->$campo ) && $row->$campo > 0 ) {
-                        $grupos_data[ $grupo_nombre ]['suma']   += floatval( $row->$campo );
+                        $grupos_data[ $grupo_nombre ]['suma']   += (float) $row->$campo;
                         $grupos_data[ $grupo_nombre ]['cuenta'] += 1;
                     }
                 }
@@ -135,7 +135,7 @@ function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): a
         foreach ( $grupos as $grupo_nombre => $campos ) {
             $suma   = $grupos_data[ $grupo_nombre ]['suma'] ?? 0;
             $cuenta = $grupos_data[ $grupo_nombre ]['cuenta'] ?? 0;
-            $avg    = $cuenta > 0 ? round( $suma / $cuenta, 1 ) : 0;
+            $avg    = $cuenta > 0 ? round( $suma / $cuenta, 1 ) : 0.0;
             $codigo = strtok( $grupo_nombre, ' ' );
             $promedios[ $codigo ] = $avg;
         }
@@ -143,20 +143,30 @@ function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): a
         $total = round( array_sum( $promedios ), 1 );
         $resultado[ $rol ] = $total;
 
-        if ( $args['with_detail'] ) {
+        if ( $args['with_raw'] ) {
             $detalle[ $rol ] = [ 'grupos' => $promedios, 'total' => $total ];
         }
     }
 
-    if ( $args['with_detail'] ) {
-        $resultado['detalle'] = $detalle;
+    if ( $args['with_raw'] ) {
+        $resultado['raw'] = $detalle;
     }
 
-    $ttl = intval( apply_filters( 'cdb_grafica_scores_ttl', 600, $empleado_id, $args ) );
+    $ttl = (int) apply_filters( 'cdb_grafica_scores_ttl', 600, $empleado_id );
     if ( ! $args['bypass_cache'] ) {
         set_transient( $transient_key, $resultado, $ttl );
     }
 
     return $resultado;
 }
+
+add_action(
+    'cdb_grafica_after_save',
+    function ( int $empleado_id ): void {
+        $scores_key = apply_filters( 'cdb_grafica_transient_key', "cdbg_scores_{$empleado_id}", $empleado_id, 'scores' );
+        $last_key   = apply_filters( 'cdb_grafica_transient_key', "cdbg_last_{$empleado_id}", $empleado_id, 'last' );
+        delete_transient( $scores_key );
+        delete_transient( $last_key );
+    }
+);
 
