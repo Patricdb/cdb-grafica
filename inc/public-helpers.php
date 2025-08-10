@@ -160,6 +160,47 @@ function cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): a
     return $resultado;
 }
 
+/**
+ * Normaliza una puntuación a un porcentaje.
+ *
+ * @param float $score Puntuación a normalizar.
+ * @param array $args  Opcional. {
+ *     @type float  $max  Máximo para el 100%. Por defecto 40 filtrable mediante cdb_grafica_width_max.
+ *     @type string $role Rol actual, si aplica.
+ * }
+ * @return float Porcentaje normalizado con dos decimales.
+ * @since 1.2.0
+ */
+function cdb_grafica_get_width_pct_from_score( float $score, array $args = [] ): float {
+    $max = $args['max'] ?? apply_filters( 'cdb_grafica_width_max', 40, $args );
+    return max( 0, min( 100, round( ( $score / max( 1, $max ) ) * 100, 2 ) ) );
+}
+
+/**
+ * Obtiene el color configurado para un rol y tipo dados.
+ *
+ * @param string $role Rol (empleado|empleador|tutor).
+ * @param string $type Tipo de color: background o border. Predeterminado background.
+ * @return string Color solicitado.
+ * @since 1.2.0
+ */
+function cdb_grafica_get_color_by_role( string $role, string $type = 'background' ): string {
+    $defaults = [
+        'empleado_background'  => 'rgba(75, 192, 192, 0.2)',
+        'empleado_border'      => 'rgba(75, 192, 192, 1)',
+        'empleador_background' => 'rgba(54, 162, 235, 0.2)',
+        'empleador_border'     => 'rgba(54, 162, 235, 1)',
+        'tutor_background'     => 'rgba(255, 99, 132, 0.2)',
+        'tutor_border'         => 'rgba(255, 99, 132, 1)',
+    ];
+    $opts  = get_option( 'cdb_grafica_colores', $defaults );
+    $role  = strtolower( $role );
+    $key   = "{$role}_{$type}";
+    $value = $opts[ $key ] ?? $defaults[ $key ] ?? '';
+
+    return apply_filters( 'cdb_grafica_color_by_role', $value, $role, $type, $opts );
+}
+
 add_action(
     'cdb_grafica_after_save',
     function ( int $empleado_id ): void {
