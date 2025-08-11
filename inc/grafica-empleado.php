@@ -54,44 +54,51 @@ function registrar_bloque_grafica_empleado() {
 add_action('init', 'registrar_bloque_grafica_empleado');
 
 // ------------------------------------------------------------------
-// 2. Renderizado del bloque: calcular la gráfica y guardar la puntuación total.
+// 2. Construye el HTML de la gráfica para un empleado específico.
 // ------------------------------------------------------------------
-function renderizar_bloque_grafica_empleado($attributes, $content) {
+function cdb_grafica_build_empleado_html( int $empleado_id, array $attrs = [] ): string {
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'grafica_empleado_results';
-    $post_id    = get_the_ID();
+    if ( $empleado_id <= 0 ) {
+        return '';
+    }
 
-    // Recuperar las calificaciones del post actual con rol definido
+    $defaults = [
+        'max_width' => '',
+        'class'     => '',
+        'id_suffix' => '',
+    ];
+    $attrs = wp_parse_args( $attrs, $defaults );
+
+    $table_name = $wpdb->prefix . 'grafica_empleado_results';
+
     $results = $wpdb->get_results(
         $wpdb->prepare(
-            "SELECT * FROM $table_name WHERE post_id = %d AND user_role IS NOT NULL",
-            $post_id
+            "SELECT * FROM {$table_name} WHERE post_id = %d AND user_role IS NOT NULL",
+            $empleado_id
         )
     );
 
-    // Inicializar agrupaciones para calcular promedios
     $criterios = cdb_get_criterios_empleado();
     $grupos    = [];
-    foreach ($criterios as $grupo_nombre => $campos) {
-        $grupos[$grupo_nombre] = array_keys($campos);
+    foreach ( $criterios as $grupo_nombre => $campos ) {
+        $grupos[ $grupo_nombre ] = array_keys( $campos );
     }
 
-    // Calcular promedios por grupo y por rol
     $roles_data = [];
-    foreach ($results as $row) {
-        $rol = strtolower($row->user_role);
-        if (!isset($roles_data[$rol])) {
-            $roles_data[$rol] = [];
+    foreach ( $results as $row ) {
+        $rol = strtolower( $row->user_role );
+        if ( ! isset( $roles_data[ $rol ] ) ) {
+            $roles_data[ $rol ] = [];
         }
-        foreach ($grupos as $grupo_nombre => $campos) {
-            if (!isset($roles_data[$rol][$grupo_nombre])) {
-                $roles_data[$rol][$grupo_nombre] = ['suma' => 0, 'cuenta' => 0];
+        foreach ( $grupos as $grupo_nombre => $campos ) {
+            if ( ! isset( $roles_data[ $rol ][ $grupo_nombre ] ) ) {
+                $roles_data[ $rol ][ $grupo_nombre ] = [ 'suma' => 0, 'cuenta' => 0 ];
             }
-            foreach ($campos as $campo) {
-                if (isset($row->$campo) && 0 != $row->$campo) {
-                    $roles_data[$rol][$grupo_nombre]['suma']   += $row->$campo;
-                    $roles_data[$rol][$grupo_nombre]['cuenta'] += 1;
+            foreach ( $campos as $campo ) {
+                if ( isset( $row->$campo ) && 0 != $row->$campo ) {
+                    $roles_data[ $rol ][ $grupo_nombre ]['suma']   += $row->$campo;
+                    $roles_data[ $rol ][ $grupo_nombre ]['cuenta'] += 1;
                 }
             }
         }
@@ -122,41 +129,41 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         }
     }
 
-    // Calcular la puntuación total agregada para meta
     $promedios_globales = [];
-    foreach ($grupos as $grupo_nombre => $campos) {
+    foreach ( $grupos as $grupo_nombre => $campos ) {
         $total_grupo = 0;
         $count       = 0;
-        foreach ($results as $row) {
-            foreach ($campos as $campo) {
-                if (isset($row->$campo) && $row->$campo != 0) {
+        foreach ( $results as $row ) {
+            foreach ( $campos as $campo ) {
+                if ( isset( $row->$campo ) && $row->$campo != 0 ) {
                     $total_grupo += $row->$campo;
                     $count++;
                 }
             }
         }
-        $promedios_globales[] = $count > 0 ? round($total_grupo / $count, 1) : 0;
+        $promedios_globales[] = $count > 0 ? round( $total_grupo / $count, 1 ) : 0;
     }
-    $total = round(array_sum($promedios_globales), 1);
+    $total = round( array_sum( $promedios_globales ), 1 );
+    $total = (float) $total;
+    $total = apply_filters( 'cdb_grafica_empleado_total', $total, $empleado_id );
 
-    // Guardar en meta si es post_type=empleado
-    if ($post_id && get_post_type($post_id) === 'empleado') {
-        update_post_meta($post_id, 'cdb_puntuacion_total', $total);
+    if ( $empleado_id && get_post_type( $empleado_id ) === 'empleado' ) {
+        update_post_meta( $empleado_id, 'cdb_puntuacion_total', $total );
     }
 
-    // Datos para la gráfica
-    // Extraemos solo las siglas (clave antes del espacio o paréntesis)
-    $siglas = array_map(function ($grupo) {
-        return strtok($grupo, ' ');
-    }, array_keys($grupos));
+    $siglas = array_map(
+        static function ( $grupo ) {
+            return strtok( $grupo, ' ' );
+        },
+        array_keys( $grupos )
+    );
 
     $data = [
-        'labels'    => $siglas,
-        'datasets'  => $datasets,
+        'labels'   => $siglas,
+        'datasets' => $datasets,
     ];
 
-    // Obtener colores configurados
-    $defaults = [
+    $defaults_colors = [
         'empleado_background'  => 'rgba(75, 192, 192, 0.2)',
         'empleado_border'      => 'rgba(75, 192, 192, 1)',
         'empleador_background' => 'rgba(54, 162, 235, 0.2)',
@@ -164,43 +171,84 @@ function renderizar_bloque_grafica_empleado($attributes, $content) {
         'tutor_background'     => 'rgba(255, 99, 132, 0.2)',
         'tutor_border'         => 'rgba(255, 99, 132, 1)',
         'ticks_color'          => '#666666',
-        'ticks_backdrop'       => ''
+        'ticks_backdrop'       => '',
     ];
-    $opts        = get_option('cdb_grafica_colores', $defaults);
+    $opts        = get_option( 'cdb_grafica_colores', $defaults_colors );
 
     $role_colors = [
         'empleado'  => [
-            'background' => $opts['empleado_background'] ?? $defaults['empleado_background'],
-            'border'     => $opts['empleado_border'] ?? $defaults['empleado_border'],
+            'background' => $opts['empleado_background'] ?? $defaults_colors['empleado_background'],
+            'border'     => $opts['empleado_border'] ?? $defaults_colors['empleado_border'],
         ],
         'empleador' => [
-            'background' => $opts['empleador_background'] ?? $defaults['empleador_background'],
-            'border'     => $opts['empleador_border'] ?? $defaults['empleador_border'],
+            'background' => $opts['empleador_background'] ?? $defaults_colors['empleador_background'],
+            'border'     => $opts['empleador_border'] ?? $defaults_colors['empleador_border'],
         ],
         'tutor'     => [
-            'background' => $opts['tutor_background'] ?? $defaults['tutor_background'],
-            'border'     => $opts['tutor_border'] ?? $defaults['tutor_border'],
+            'background' => $opts['tutor_background'] ?? $defaults_colors['tutor_background'],
+            'border'     => $opts['tutor_border'] ?? $defaults_colors['tutor_border'],
         ],
     ];
 
-    $attributes['backgroundColor']    = $role_colors['empleado']['background'];
-    $attributes['borderColor']        = $role_colors['empleado']['border'];
-    $attributes['ticksColor']         = $opts['ticks_color'] ?? $defaults['ticks_color'];
-    $attributes['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults['ticks_backdrop'];
+    $attrs['backgroundColor']    = $role_colors['empleado']['background'];
+    $attrs['borderColor']        = $role_colors['empleado']['border'];
+    $attrs['ticksColor']         = $opts['ticks_color'] ?? $defaults_colors['ticks_color'];
+    $attrs['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults_colors['ticks_backdrop'];
+
+    if ( ! wp_script_is( 'chartjs', 'enqueued' ) ) {
+        if ( ! wp_script_is( 'chartjs', 'registered' ) ) {
+            wp_register_script(
+                'chartjs',
+                'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js',
+                [],
+                '4.3.0',
+                false
+            );
+        }
+        wp_enqueue_script( 'chartjs' );
+    }
+
+    if ( ! has_action( 'wp_footer', 'generar_grafica_empleado_en_frontend' ) ) {
+        add_action( 'wp_footer', 'generar_grafica_empleado_en_frontend', 99 );
+    }
+
+    $div_id = 'grafica-empleado';
+    if ( ! empty( $attrs['id_suffix'] ) ) {
+        $div_id .= '-' . sanitize_key( $attrs['id_suffix'] );
+    }
+    $class_attr = $attrs['class'] ? ' class="' . esc_attr( $attrs['class'] ) . '"' : '';
+    $style_attr = $attrs['max_width'] ? ' style="max-width:' . esc_attr( $attrs['max_width'] ) . ';"' : '';
 
     ob_start();
     ?>
-    <div id="grafica-empleado"
-         data-valores="<?php echo esc_attr(wp_json_encode($data)); ?>"
-         data-role-colors="<?php echo esc_attr(wp_json_encode($role_colors)); ?>"
-         data-background-color="<?php echo esc_attr($attributes['backgroundColor']); ?>"
-         data-border-color="<?php echo esc_attr($attributes['borderColor']); ?>"
-         data-ticks-color="<?php echo esc_attr($attributes['ticksColor']); ?>"
-         data-ticks-backdrop-color="<?php echo esc_attr($attributes['ticksBackdropColor']); ?>">
+    <div id="<?php echo esc_attr( $div_id ); ?>"<?php echo $class_attr . $style_attr; ?>
+         data-valores="<?php echo esc_attr( wp_json_encode( $data ) ); ?>"
+         data-role-colors="<?php echo esc_attr( wp_json_encode( $role_colors ) ); ?>"
+         data-background-color="<?php echo esc_attr( $attrs['backgroundColor'] ); ?>"
+         data-border-color="<?php echo esc_attr( $attrs['borderColor'] ); ?>"
+         data-ticks-color="<?php echo esc_attr( $attrs['ticksColor'] ); ?>"
+         data-ticks-backdrop-color="<?php echo esc_attr( $attrs['ticksBackdropColor'] ); ?>">
     </div>
     <?php
     return ob_get_clean();
 }
+
+function renderizar_bloque_grafica_empleado( $attributes, $content ) {
+    $empleado_id = get_the_ID();
+    return cdb_grafica_build_empleado_html( (int) $empleado_id, $attributes );
+}
+
+add_filter(
+    'cdb_grafica_empleado_html',
+    function ( $html, $empleado_id, $attrs = [] ) {
+        if ( ! $empleado_id ) {
+            return $html;
+        }
+        return cdb_grafica_build_empleado_html( (int) $empleado_id, (array) $attrs );
+    },
+    10,
+    3
+);
 
 // ------------------------------------------------------------------
 // 3. Generar la gráfica en el frontend.
@@ -209,8 +257,11 @@ function generar_grafica_empleado_en_frontend() {
     ?>
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const dataElement = document.getElementById('grafica-empleado');
-        if (dataElement) {
+        const elements = document.querySelectorAll('[id^="grafica-empleado"]');
+        if (!elements.length || typeof Chart === 'undefined') {
+            return;
+        }
+        elements.forEach(function (dataElement) {
             const data = JSON.parse(dataElement.dataset.valores);
             const ctx = document.createElement('canvas');
             dataElement.appendChild(ctx);
@@ -260,12 +311,11 @@ function generar_grafica_empleado_en_frontend() {
                 data: chartData,
                 options: options
             });
-        }
+        });
     });
     </script>
     <?php
 }
-add_action('wp_footer', 'generar_grafica_empleado_en_frontend');
 
 // ------------------------------------------------------------------
 // 4. Crear la tabla de resultados con dbDelta.
@@ -426,8 +476,9 @@ if (in_array('empleador', $roles) && $puede_calificar) {
 
     ob_start();
     // Si no puede calificar, mostramos el mensaje y salimos
-    if (!$puede_calificar) {
-        echo '<p style="color:red; font-weight:bold;">' . esc_html($mensaje) . '</p>';
+    if ( ! $puede_calificar ) {
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        echo '<p style="color:red; font-weight:bold;">' . esc_html( $mensaje ) . '</p>';
         return ob_get_clean();
     }
 
