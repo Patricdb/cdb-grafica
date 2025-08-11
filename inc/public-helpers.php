@@ -211,3 +211,40 @@ add_action(
     }
 );
 
+/**
+ * Filters the HTML of an employee chart.
+ *
+ * @param string $html        HTML result.
+ * @param int    $empleado_id Employee ID.
+ * @param array  $attrs       Optional attributes.
+ *
+ * @return string
+ */
+/*
+ * apply_filters( 'cdb_grafica_empleado_html', string $html, int $empleado_id, array $attrs = [] )
+ */
+
+/**
+ * Filters the calculated total score for an employee.
+ *
+ * @param float $total       Total score.
+ * @param int   $empleado_id Employee ID.
+ *
+ * @return float
+ */
+/*
+ * apply_filters( 'cdb_grafica_empleado_total', float $total, int $empleado_id )
+ */
+
+/**
+ * Filters the notice message shown in the rating form.
+ *
+ * @param string $notice      Default notice message.
+ * @param int    $empleado_id Employee ID.
+ *
+ * @return string
+ */
+/*
+ * apply_filters( 'cdb_grafica_empleado_notice', string $notice, int $empleado_id )
+ */
+
