@@ -357,6 +357,7 @@ function cdb_grafica_notice_html( $msg, $empleado_id ) {
 
 function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [] ): string {
     $post_id = $empleado_id ? (int) $empleado_id : get_the_ID();
+    $args    = wp_parse_args( (array) $args, [ 'embed_chart' => true ] );
 
     $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
     wp_enqueue_style(
@@ -497,7 +498,12 @@ function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [
         true
     );
 
+    $embed_chart = apply_filters( 'cdb_grafica_empleado_form_embed_chart', ! empty( $args['embed_chart'] ), $post_id, $args );
+
     ob_start();
+    if ( $embed_chart ) {
+        echo apply_filters( 'cdb_grafica_empleado_html', '', $post_id, $args );
+    }
     ?>
     <form method="post" action="">
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
@@ -568,6 +574,86 @@ add_filter(
             return $html;
         }
         return cdb_grafica_build_empleado_form_html( (int) $empleado_id, (array) $args );
+    },
+    10,
+    3
+);
+
+function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $args = [] ): string {
+    global $wpdb;
+
+    if ( $empleado_id <= 0 ) {
+        return '';
+    }
+
+    $table_name = $wpdb->prefix . 'grafica_empleado_results';
+    $results    = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM {$table_name} WHERE post_id = %d AND user_role IS NOT NULL",
+            $empleado_id
+        )
+    );
+
+    $criterios = cdb_get_criterios_empleado();
+    $grupos    = [];
+    foreach ( $criterios as $grupo_nombre => $campos ) {
+        $grupos[ $grupo_nombre ] = array_keys( $campos );
+    }
+
+    $roles  = [ 'empleado', 'empleador', 'tutor' ];
+    $scores = [];
+    foreach ( $roles as $role ) {
+        foreach ( $grupos as $grupo_nombre => $campos ) {
+            $suma  = 0;
+            $count = 0;
+            foreach ( $results as $row ) {
+                if ( strtolower( $row->user_role ) !== $role ) {
+                    continue;
+                }
+                foreach ( $campos as $campo ) {
+                    if ( isset( $row->$campo ) && 0 != $row->$campo ) {
+                        $suma  += $row->$campo;
+                        $count++;
+                    }
+                }
+            }
+            $scores[ $role ][ $grupo_nombre ] = $count > 0 ? round( $suma / $count, 1 ) : '';
+        }
+    }
+
+    ob_start();
+    ?>
+    <table class="cdb-grafica-scores">
+        <thead>
+            <tr>
+                <th><?php esc_html_e( 'Criterio', 'cdb-grafica' ); ?></th>
+                <th><?php echo esc_html( cdb_empleado_plural_role( 'empleado' ) ); ?></th>
+                <th><?php echo esc_html( cdb_empleado_plural_role( 'empleador' ) ); ?></th>
+                <th><?php echo esc_html( cdb_empleado_plural_role( 'tutor' ) ); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ( $grupos as $grupo_nombre => $campos ) : ?>
+            <tr>
+                <th scope="row"><?php echo esc_html( $grupo_nombre ); ?></th>
+                <?php foreach ( $roles as $role ) : ?>
+                    <td><?php echo '' !== $scores[ $role ][ $grupo_nombre ] ? esc_html( $scores[ $role ][ $grupo_nombre ] ) : '-'; ?></td>
+                <?php endforeach; ?>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php
+    return ob_get_clean();
+}
+
+add_filter(
+    'cdb_grafica_empleado_scores_table_html',
+    function ( $html, $empleado_id, $args = [] ) {
+        if ( ! $empleado_id ) {
+            return $html;
+        }
+        return cdb_grafica_build_empleado_scores_table_html( (int) $empleado_id, (array) $args );
     },
     10,
     3
