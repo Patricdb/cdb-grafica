@@ -350,14 +350,25 @@ function grafica_empleado_create_table() {
 // ------------------------------------------------------------------
 // 5. Formulario de calificaciones para empleados.
 // ------------------------------------------------------------------
+function cdb_grafica_notice_html( $msg, $empleado_id ) {
+    $msg = apply_filters( 'cdb_grafica_empleado_notice', $msg, (int) $empleado_id );
+    return '<p class="cdb-grafica-notice cdb-grafica-notice--warn">' . esc_html( $msg ) . '</p>';
+}
+
 function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [] ): string {
     $post_id = $empleado_id ? (int) $empleado_id : get_the_ID();
 
+    $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
+    wp_enqueue_style(
+        'cdb-grafica-empleado-style',
+        plugins_url( 'style.css', dirname( __FILE__ ) ),
+        [],
+        filemtime( $style_path )
+    );
+
     // Verificar permiso global
     if ( ! current_user_can( 'submit_grafica_empleado' ) ) {
-        $mensaje = __( 'No tienes permisos para enviar resultados.', 'cdb-grafica' );
-        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
-        return '<p>' . esc_html( $mensaje ) . '</p>';
+        return cdb_grafica_notice_html( __( 'No tienes permisos para enviar resultados.', 'cdb-grafica' ), $post_id );
     }
 
     global $wpdb;
@@ -368,125 +379,125 @@ function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [
     $post       = get_post( $post_id );
 
     if ( ! $post || $post->post_type !== 'empleado' ) {
-        $mensaje = __( 'Este contenido no es un empleado válido.', 'cdb-grafica' );
-        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
-        return '<p>' . esc_html( $mensaje ) . '</p>';
+        return cdb_grafica_notice_html( __( 'Este contenido no es un empleado válido.', 'cdb-grafica' ), $post_id );
     }
 
     // Determinar si se muestra el formulario o no:
     $puede_calificar = true;
     $mensaje         = '';
 
-// Verificaciones por rol:
-if (in_array('empleado', $roles)) {
-    // 1) ¿Está intentando calificar a su propio empleado?
-    if ($post->post_author == $user_id) {
-        $puede_calificar = false;
-        $mensaje = __( 'No puedes calificar a tu propio empleado.', 'cdb-grafica' );
-    } else {
-        // 2) Verificar si ambos comparten algún equipo en wp_cdb_experiencia
-        if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
-            $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
-        } else {
-            $mensaje = __( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' );
-            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
-            return '<p>' . esc_html( $mensaje ) . '</p>';
-        }
-        if (!$mi_empleado_id) {
+    // Verificaciones por rol:
+    if ( in_array( 'empleado', $roles, true ) ) {
+        // 1) ¿Está intentando calificar a su propio empleado?
+        if ( $post->post_author == $user_id ) {
             $puede_calificar = false;
-            $mensaje = __( 'No se encontró tu perfil de empleado.', 'cdb-grafica' );
+            $mensaje         = __( 'No puedes calificar a tu propio empleado.', 'cdb-grafica' );
         } else {
-            // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
-            $existe_equipo_compartido = $wpdb->get_var($wpdb->prepare("
+            // 2) Verificar si ambos comparten algún equipo en wp_cdb_experiencia
+            if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
+                $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
+            } else {
+                return cdb_grafica_notice_html( __( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' ), $post_id );
+            }
+            if ( ! $mi_empleado_id ) {
+                $puede_calificar = false;
+                $mensaje         = __( 'No se encontró tu perfil de empleado.', 'cdb-grafica' );
+            } else {
+                // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
+                $existe_equipo_compartido = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "
                 SELECT 1
                 FROM {$wpdb->prefix}cdb_experiencia e1
-                JOIN {$wpdb->prefix}cdb_experiencia e2 
+                JOIN {$wpdb->prefix}cdb_experiencia e2
                       ON e1.equipo_id = e2.equipo_id
                 WHERE e1.empleado_id = %d
                   AND e2.empleado_id = %d
                 LIMIT 1
-            ", $mi_empleado_id, $post_id));
+            ",
+                        $mi_empleado_id,
+                        $post_id
+                    )
+                );
 
-            if (!$existe_equipo_compartido) {
-                $puede_calificar = false;
-                $mensaje = __( 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.', 'cdb-grafica' );
+                if ( ! $existe_equipo_compartido ) {
+                    $puede_calificar = false;
+                    $mensaje         = __( 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.', 'cdb-grafica' );
+                }
             }
         }
     }
-}
 
-if (in_array('empleador', $roles) && $puede_calificar) {
-    // 1) Obtener los bares del empleador (autor = $user_id)
-    $bares_del_empleador = get_posts([
-        'post_type'      => 'bar',
-        'post_status'    => 'publish',
-        'author'         => $user_id,
-        'fields'         => 'ids',
-        'posts_per_page' => -1
-    ]);
-    $bares_del_empleador = $bares_del_empleador ?: [];
+    if ( in_array( 'empleador', $roles, true ) && $puede_calificar ) {
+        // 1) Obtener los bares del empleador (autor = $user_id)
+        $bares_del_empleador = get_posts(
+            [
+                'post_type'      => 'bar',
+                'post_status'    => 'publish',
+                'author'         => $user_id,
+                'fields'         => 'ids',
+                'posts_per_page' => -1,
+            ]
+        );
+        $bares_del_empleador = $bares_del_empleador ?: [];
 
-    // 2) Verificar si el empleado (post_id) tiene cdb_experiencia en alguno de esos bares
-    //    Si no existe coincidencia, no puede calificarlo.
-    if (empty($bares_del_empleador)) {
-        $puede_calificar = false;
-        $mensaje = __( 'No tienes ningún bar registrado para calificar.', 'cdb-grafica' );
-    } else {
-        $in_bares = implode(',', array_map('intval', $bares_del_empleador));
+        // 2) Verificar si el empleado (post_id) tiene cdb_experiencia en alguno de esos bares
+        //    Si no existe coincidencia, no puede calificarlo.
+        if ( empty( $bares_del_empleador ) ) {
+            $puede_calificar = false;
+            $mensaje         = __( 'No tienes ningún bar registrado para calificar.', 'cdb-grafica' );
+        } else {
+            $in_bares = implode( ',', array_map( 'intval', $bares_del_empleador ) );
 
-        // ¿El empleado (post_id) tiene experiencia en alguno de esos bares?
-        $existe_relacion = $wpdb->get_var($wpdb->prepare("
+            // ¿El empleado (post_id) tiene experiencia en alguno de esos bares?
+            $existe_relacion = $wpdb->get_var(
+                $wpdb->prepare(
+                    "
             SELECT 1
             FROM {$wpdb->prefix}cdb_experiencia
             WHERE empleado_id = %d
               AND bar_id IN ($in_bares)
             LIMIT 1
-        ", $post_id));
+        ",
+                    $post_id
+                )
+            );
 
-        if (!$existe_relacion) {
-            $puede_calificar = false;
-            $mensaje = __( 'No pertenece a tu equipo.', 'cdb-grafica' );
+            if ( ! $existe_relacion ) {
+                $puede_calificar = false;
+                $mensaje         = __( 'No pertenece a tu equipo.', 'cdb-grafica' );
+            }
         }
     }
-}
 
+    if ( ! $puede_calificar ) {
+        $mensaje = $mensaje ?: __( 'No puedes calificar a este empleado.', 'cdb-grafica' );
+        return cdb_grafica_notice_html( $mensaje, $post_id );
+    }
 
     // Obtener datos existentes (si alguno)
-    $existing_data = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM $table_name WHERE post_id = %d AND user_id = %d",
-        $post_id,
-        $user_id
-    ), ARRAY_A);
+    $existing_data = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM $table_name WHERE post_id = %d AND user_id = %d",
+            $post_id,
+            $user_id
+        ),
+        ARRAY_A
+    );
 
     // Definir los nombres y descripciones de las características
     $grupos = cdb_get_criterios_empleado();
 
-    // Encolar estilos y scripts si quieres
-    $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';
-    wp_enqueue_style(
-        'cdb-grafica-empleado-style',
-        plugins_url('style.css', dirname(__FILE__)),
-        [],
-        filemtime($style_path)
-    );
-    $script_form_path = plugin_dir_path(dirname(__FILE__)) . 'script.js';
+    $script_form_path = plugin_dir_path( dirname( __FILE__ ) ) . 'script.js';
     wp_enqueue_script(
         'grafica-empleado-form-script',
-        plugins_url('script.js', dirname(__FILE__)),
-        ['jquery'],
-        filemtime($script_form_path),
+        plugins_url( 'script.js', dirname( __FILE__ ) ),
+        [ 'jquery' ],
+        filemtime( $script_form_path ),
         true
     );
 
     ob_start();
-    // Si no puede calificar, mostramos el mensaje y salimos
-    if ( ! $puede_calificar ) {
-        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
-        echo '<p style="color:red; font-weight:bold;">' . esc_html( $mensaje ) . '</p>';
-        return ob_get_clean();
-    }
-
-    // Si sí puede calificar, mostramos el formulario
     ?>
     <form method="post" action="">
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
