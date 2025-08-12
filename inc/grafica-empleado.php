@@ -348,15 +348,16 @@ function grafica_empleado_create_table() {
 }
 
 // ------------------------------------------------------------------
-// 5. Shortcode para el formulario de calificaciones (oculta el formulario si no procede).
+// 5. Formulario de calificaciones para empleados.
 // ------------------------------------------------------------------
-add_shortcode('grafica_empleado_form', function ($atts) {
-    // Atributos del shortcode
-    $atts = shortcode_atts(['post_id' => get_the_ID()], $atts);
+function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [] ): string {
+    $post_id = $empleado_id ? (int) $empleado_id : get_the_ID();
 
     // Verificar permiso global
-    if (!current_user_can('submit_grafica_empleado')) {
-        return '<p>' . esc_html__( 'No tienes permisos para enviar resultados.', 'cdb-grafica' ) . '</p>';
+    if ( ! current_user_can( 'submit_grafica_empleado' ) ) {
+        $mensaje = __( 'No tienes permisos para enviar resultados.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        return '<p>' . esc_html( $mensaje ) . '</p>';
     }
 
     global $wpdb;
@@ -364,11 +365,12 @@ add_shortcode('grafica_empleado_form', function ($atts) {
     $user_id    = get_current_user_id();
     $user       = wp_get_current_user();
     $roles      = (array) $user->roles;
-    $post_id    = intval($atts['post_id']);
-    $post       = get_post($post_id);
+    $post       = get_post( $post_id );
 
-    if (!$post || $post->post_type !== 'empleado') {
-        return '<p>' . esc_html__( 'Este contenido no es un empleado válido.', 'cdb-grafica' ) . '</p>';
+    if ( ! $post || $post->post_type !== 'empleado' ) {
+        $mensaje = __( 'Este contenido no es un empleado válido.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        return '<p>' . esc_html( $mensaje ) . '</p>';
     }
 
     // Determinar si se muestra el formulario o no:
@@ -386,7 +388,9 @@ if (in_array('empleado', $roles)) {
         if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
             $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
         } else {
-            return '<p>' . esc_html__( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' ) . '</p>';
+            $mensaje = __( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' );
+            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+            return '<p>' . esc_html( $mensaje ) . '</p>';
         }
         if (!$mi_empleado_id) {
             $puede_calificar = false;
@@ -537,7 +541,26 @@ if (in_array('empleador', $roles) && $puede_calificar) {
     </form>
     <?php
     return ob_get_clean();
-});
+}
+
+function cdb_grafica_empleado_form_shortcode( $atts ) {
+    $atts        = shortcode_atts( [ 'post_id' => get_the_ID() ], $atts );
+    $empleado_id = (int) $atts['post_id'];
+    return cdb_grafica_build_empleado_form_html( $empleado_id, (array) $atts );
+}
+add_shortcode( 'grafica_empleado_form', 'cdb_grafica_empleado_form_shortcode' );
+
+add_filter(
+    'cdb_grafica_empleado_form_html',
+    function ( $html, $empleado_id, $args = [] ) {
+        if ( ! $empleado_id ) {
+            return $html;
+        }
+        return cdb_grafica_build_empleado_form_html( (int) $empleado_id, (array) $args );
+    },
+    10,
+    3
+);
 
 // ------------------------------------------------------------------
 // 6. Procesar el envío del formulario "grafica_empleado_form".
