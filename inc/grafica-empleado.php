@@ -544,9 +544,9 @@ if (in_array('empleador', $roles) && $puede_calificar) {
 }
 
 function cdb_grafica_empleado_form_shortcode( $atts ) {
-    $atts        = shortcode_atts( [ 'post_id' => get_the_ID() ], $atts );
-    $empleado_id = (int) $atts['post_id'];
-    return cdb_grafica_build_empleado_form_html( $empleado_id, (array) $atts );
+    $atts        = wp_parse_args( (array) $atts, [ 'id_suffix' => '' ] );
+    $empleado_id = isset( $atts['post_id'] ) ? (int) $atts['post_id'] : get_the_ID();
+    return cdb_grafica_build_empleado_form_html( (int) $empleado_id, $atts );
 }
 add_shortcode( 'grafica_empleado_form', 'cdb_grafica_empleado_form_shortcode' );
 
@@ -568,13 +568,19 @@ add_filter(
 //    en la tabla personalizada del empleado evaluado.
 // ------------------------------------------------------------------
 function handle_grafica_empleado_submission() {
-    if (isset($_POST['submit_grafica_empleado'])) {
+    if ( isset( $_POST['submit_grafica_empleado'] ) ) {
+        $post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+
         // Repetir validaciones para seguridad
-        if (!isset($_POST['grafica_empleado_nonce']) || !wp_verify_nonce($_POST['grafica_empleado_nonce'], 'submit_grafica_empleado')) {
-            wp_die( esc_html__( 'Nonce inválido.', 'cdb-grafica' ) );
+        if ( ! isset( $_POST['grafica_empleado_nonce'] ) || ! wp_verify_nonce( $_POST['grafica_empleado_nonce'], 'submit_grafica_empleado' ) ) {
+            $mensaje = __( 'Nonce inválido.', 'cdb-grafica' );
+            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+            wp_die( esc_html( $mensaje ) );
         }
-        if (!current_user_can('submit_grafica_empleado')) {
-            wp_die( esc_html__( 'No tienes permisos para realizar esta acción.', 'cdb-grafica' ) );
+        if ( ! current_user_can( 'submit_grafica_empleado' ) ) {
+            $mensaje = __( 'No tienes permisos para realizar esta acción.', 'cdb-grafica' );
+            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+            wp_die( esc_html( $mensaje ) );
         }
 
         global $wpdb;
@@ -582,31 +588,40 @@ function handle_grafica_empleado_submission() {
         $user_id    = get_current_user_id();
         $user       = wp_get_current_user();
         $roles      = (array) $user->roles;
-        $post_id    = intval($_POST['post_id']);
-        $post       = get_post($post_id);
+        $post       = get_post( $post_id );
 
-        if (!$post) {
-            wp_die( esc_html__( 'Empleado inválido.', 'cdb-grafica' ) );
+        if ( ! $post ) {
+            $mensaje = __( 'Empleado inválido.', 'cdb-grafica' );
+            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+            wp_die( esc_html( $mensaje ) );
         }
-        if ($post->post_type !== 'empleado') {
-            wp_die( esc_html__( 'No es un post de tipo empleado.', 'cdb-grafica' ) );
+        if ( 'empleado' !== $post->post_type ) {
+            $mensaje = __( 'No es un post de tipo empleado.', 'cdb-grafica' );
+            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+            wp_die( esc_html( $mensaje ) );
         }
 
 // Validaciones de rol
 if (in_array('empleado', $roles)) {
     // 1) Evitar que un empleado califique su propio empleado
     if ($post->post_author == $user_id) {
-        wp_die( esc_html__( 'No puedes calificar a tu propio empleado.', 'cdb-grafica' ) );
+        $mensaje = __( 'No puedes calificar a tu propio empleado.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        wp_die( esc_html( $mensaje ) );
     }
 
     // 2) Verificar si ambos (quien califica y el calificado) comparten equipo en wp_cdb_experiencia
     if ( function_exists( 'cdb_obtener_empleado_id' ) ) {
         $mi_empleado_id = cdb_obtener_empleado_id( $user_id );
     } else {
-        return '<p>' . esc_html__( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' ) . '</p>';
+        $mensaje = __( 'Required function cdb_obtener_empleado_id is missing.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        return '<p>' . esc_html( $mensaje ) . '</p>';
     }
-    if (!$mi_empleado_id) {
-        wp_die( esc_html__( 'No se encontró tu perfil de empleado.', 'cdb-grafica' ) );
+    if ( ! $mi_empleado_id ) {
+        $mensaje = __( 'No se encontró tu perfil de empleado.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        wp_die( esc_html( $mensaje ) );
     }
 
     // Consulta: ¿existe un equipo_id compartido entre "mi_empleado_id" y "$post_id" en wp_cdb_experiencia?
@@ -620,8 +635,10 @@ if (in_array('empleado', $roles)) {
         LIMIT 1
     ", $mi_empleado_id, $post_id));
 
-    if (!$existe_equipo_compartido) {
-        wp_die( esc_html__( 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.', 'cdb-grafica' ) );
+    if ( ! $existe_equipo_compartido ) {
+        $mensaje = __( 'No puedes calificar a un empleado que no pertenece a tu mismo equipo.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        wp_die( esc_html( $mensaje ) );
     }
 }
 
@@ -638,7 +655,9 @@ if (in_array('empleador', $roles)) {
 
     // 2) Verificar si el empleado (post_id) tiene experiencia en alguno de esos bares
     if (empty($bares_del_empleador)) {
-        wp_die( esc_html__( 'No tienes bares para calificar a este empleado.', 'cdb-grafica' ) );
+        $mensaje = __( 'No tienes bares para calificar a este empleado.', 'cdb-grafica' );
+        $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+        wp_die( esc_html( $mensaje ) );
     } else {
         $in_bares = implode(',', array_map('intval', $bares_del_empleador));
 
@@ -650,8 +669,10 @@ if (in_array('empleador', $roles)) {
             LIMIT 1
         ", $post_id));
 
-        if (!$existe_relacion) {
-            wp_die( esc_html__( 'No pertenece a tu equipo.', 'cdb-grafica' ) );
+        if ( ! $existe_relacion ) {
+            $mensaje = __( 'No pertenece a tu equipo.', 'cdb-grafica' );
+            $mensaje = apply_filters( 'cdb_grafica_empleado_notice', $mensaje, $post_id );
+            wp_die( esc_html( $mensaje ) );
         }
     }
 }
