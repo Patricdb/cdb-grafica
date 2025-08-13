@@ -64,3 +64,7 @@ form {
     border-radius: 5px; /* Bordes redondeados */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
 }
+
+.cdb-grafica-scores td.is-numeric {
+    font-variant-numeric: tabular-nums;
+}
