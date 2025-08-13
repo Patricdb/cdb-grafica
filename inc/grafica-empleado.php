@@ -624,6 +624,13 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
     ob_start();
     ?>
     <table class="cdb-grafica-scores">
+        <caption class="screen-reader-text"><?php esc_html_e( 'Tabla de calificaciones por criterio y rol', 'cdb-grafica' ); ?></caption>
+        <colgroup>
+            <col style="width:40%">
+            <col style="width:20%">
+            <col style="width:20%">
+            <col style="width:20%">
+        </colgroup>
         <thead>
             <tr>
                 <th><?php esc_html_e( 'Criterio', 'cdb-grafica' ); ?></th>
@@ -637,7 +644,7 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
             <tr>
                 <th scope="row"><?php echo esc_html( $grupo_nombre ); ?></th>
                 <?php foreach ( $roles as $role ) : ?>
-                    <td><?php echo '' !== $scores[ $role ][ $grupo_nombre ] ? esc_html( $scores[ $role ][ $grupo_nombre ] ) : '-'; ?></td>
+                    <td class="is-numeric"><?php echo '' !== $scores[ $role ][ $grupo_nombre ] ? esc_html( $scores[ $role ][ $grupo_nombre ] ) : '-'; ?></td>
                 <?php endforeach; ?>
             </tr>
         <?php endforeach; ?>
