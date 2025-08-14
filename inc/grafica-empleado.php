@@ -586,6 +586,18 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         return '';
     }
 
+    $args = wp_parse_args( $args, [ 'with_legend' => false ] );
+
+    if ( ! wp_style_is( 'cdb-grafica-empleado-style', 'enqueued' ) ) {
+        $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
+        wp_enqueue_style(
+            'cdb-grafica-empleado-style',
+            plugins_url( 'style.css', dirname( __FILE__ ) ),
+            [],
+            filemtime( $style_path )
+        );
+    }
+
     $table_name = $wpdb->prefix . 'grafica_empleado_results';
     $results    = $wpdb->get_results(
         $wpdb->prepare(
@@ -621,8 +633,24 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         }
     }
 
+    $legend_html = '';
+    if ( $args['with_legend'] ) {
+        $c_emp   = cdb_grafica_get_color_by_role( 'empleado' );
+        $c_empdr = cdb_grafica_get_color_by_role( 'empleador' );
+        $c_tutor = cdb_grafica_get_color_by_role( 'tutor' );
+        $legend_html = sprintf(
+            '<div class="cdb-scores-legend"><span class="role role-emp"><i style="background:%1$s"></i> %2$s</span><span class="role role-empdr"><i style="background:%3$s"></i> %4$s</span><span class="role role-tutor"><i style="background:%5$s"></i> %6$s</span></div>',
+            esc_attr( $c_emp ),
+            esc_html__( 'Empleados', 'cdb-grafica' ),
+            esc_attr( $c_empdr ),
+            esc_html__( 'Empleadores', 'cdb-grafica' ),
+            esc_attr( $c_tutor ),
+            esc_html__( 'Tutores', 'cdb-grafica' )
+        );
+    }
+
     ob_start();
-    ?>
+    echo $legend_html; ?>
     <table class="cdb-grafica-scores">
         <caption class="screen-reader-text"><?php esc_html_e( 'Tabla de calificaciones por criterio y rol', 'cdb-grafica' ); ?></caption>
         <colgroup>
