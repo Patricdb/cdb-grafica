@@ -82,3 +82,13 @@ form {
     border-radius: 3px;
     display: inline-block;
 }
+
+.cdb-readonly .accordion-item{ background:#faf7ef;border:1px solid rgba(0,0,0,.08);border-radius:10px;margin-bottom:10px; }
+.cdb-readonly .accordion-header{ padding:12px 14px; }
+.cdb-readonly .accordion-content{ padding:10px 14px 14px; }
+.cdb-readonly-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; }
+.cdb-readonly-label{ font-weight:600; }
+.cdb-score-pills{ display:flex; gap:8px; }
+.cdb-score-pill{ display:inline-flex; align-items:center; justify-content:center; min-width:2.6ch; height:1.9em; padding:0 .55ch; border-radius:6px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; border:1px solid currentColor; }
+.cdb-score-pill.is-empty{ opacity:.75; }
+@media (max-width:480px){ .cdb-readonly-row{ flex-wrap:wrap; } }
