@@ -694,6 +694,135 @@ add_filter(
     3
 );
 
+/**
+ * Acordeón de solo lectura con 3 valores por criterio (empleado/empleador/tutor).
+ * Devuelve '' solo si $empleado_id <= 0.
+ * Encola style y JS del acordeón si no están.
+ *
+ * @param int   $empleado_id
+ * @param array $args { id_suffix:string('content'), show_legend:bool(true) }
+ * @return string HTML
+ */
+function cdb_grafica_build_empleado_readonly_html( $empleado_id, $args = array() ) {
+    if ( $empleado_id <= 0 ) {
+        return '';
+    }
+
+    $args = wp_parse_args( (array) $args, array(
+        'id_suffix'   => 'content',
+        'show_legend' => true,
+    ) );
+
+    if ( ! wp_style_is( 'cdb-grafica-empleado-style', 'enqueued' ) ) {
+        $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
+        wp_enqueue_style(
+            'cdb-grafica-empleado-style',
+            plugins_url( 'style.css', dirname( __FILE__ ) ),
+            array(),
+            filemtime( $style_path )
+        );
+    }
+
+    if ( ! wp_script_is( 'grafica-empleado-form-script', 'enqueued' ) ) {
+        $script_path = plugin_dir_path( dirname( __FILE__ ) ) . 'script.js';
+        wp_enqueue_script(
+            'grafica-empleado-form-script',
+            plugins_url( 'script.js', dirname( __FILE__ ) ),
+            array( 'jquery' ),
+            filemtime( $script_path ),
+            true
+        );
+    }
+
+    $criterios = cdb_get_criterios_empleado();
+    $grupos    = array();
+    foreach ( $criterios as $grupo_nombre => $campos ) {
+        $slug       = strtok( $grupo_nombre, ' ' );
+        $campo_lbl  = $grupo_nombre;
+        if ( 1 === count( $campos ) ) {
+            $campo_lbl = reset( $campos )['label'];
+        }
+        $grupos[ $slug ] = array(
+            'label'  => $grupo_nombre,
+            'campos' => array(
+                $slug => array( 'label' => $campo_lbl ),
+            ),
+        );
+    }
+
+    $scores      = cdb_grafica_get_scores_by_role( (int) $empleado_id, array( 'with_raw' => true ) );
+    $legend_html = '';
+    if ( ! empty( $args['show_legend'] ) ) {
+        $c_emp   = cdb_grafica_get_color_by_role( 'empleado' );
+        $c_empdr = cdb_grafica_get_color_by_role( 'empleador' );
+        $c_tutor = cdb_grafica_get_color_by_role( 'tutor' );
+        $legend_html = sprintf(
+            '<div class="cdb-scores-legend"><span class="role role-emp"><i style="background:%1$s"></i> %2$s</span><span class="role role-empdr"><i style="background:%3$s"></i> %4$s</span><span class="role role-tutor"><i style="background:%5$s"></i> %6$s</span></div>',
+            esc_attr( $c_emp ),
+            esc_html__( 'Empleados', 'cdb-grafica' ),
+            esc_attr( $c_empdr ),
+            esc_html__( 'Empleadores', 'cdb-grafica' ),
+            esc_attr( $c_tutor ),
+            esc_html__( 'Tutores', 'cdb-grafica' )
+        );
+    }
+
+    $id = 'cdb-readonly-' . sanitize_key( $args['id_suffix'] ?? 'content' );
+
+    ob_start();
+    ?>
+<div class="accordion cdb-readonly" id="<?php echo esc_attr( $id ); ?>">
+  <?php if ( ! empty( $legend_html ) && ! empty( $args['show_legend'] ) ) echo $legend_html; ?>
+
+  <?php foreach ( $grupos as $grupo_slug => $grupo_data ): ?>
+    <div class="accordion-item">
+      <div class="accordion-header">
+        <button class="accordion-toggle" type="button"><?php echo esc_html( $grupo_data['label'] ); ?></button>
+      </div>
+      <div class="accordion-content" style="display:none;">
+        <?php foreach ( $grupo_data['campos'] as $campo_slug => $campo_info ): ?>
+          <div class="cdb-readonly-row">
+            <span class="cdb-readonly-label"><?php echo esc_html( $campo_info['label'] ); ?></span>
+            <span class="cdb-score-pills">
+              <?php
+                $v_emp = $scores['raw']['empleado']['grupos'][ $campo_slug ] ?? '';
+                $v_jef = $scores['raw']['empleador']['grupos'][ $campo_slug ] ?? '';
+                $v_tut = $scores['raw']['tutor']['grupos'][ $campo_slug ] ?? '';
+                $print = function( $val, $role, $bg, $bd ) {
+                    $empty = ( '' === $val || null === $val );
+                    printf(
+                        '<span class="cdb-score-pill -%1$s%4$s" style="background:%2$s;border-color:%3$s">%5$s</span>',
+                        esc_attr( $role ),
+                        esc_attr( $bg ),
+                        esc_attr( $bd ),
+                        $empty ? ' is-empty' : '',
+                        $empty ? '&ndash;' : esc_html( $val )
+                    );
+                };
+                $print( $v_emp, 'emp', cdb_grafica_get_color_by_role( 'empleado', 'background' ), cdb_grafica_get_color_by_role( 'empleado', 'border' ) );
+                $print( $v_jef, 'boss', cdb_grafica_get_color_by_role( 'empleador', 'background' ), cdb_grafica_get_color_by_role( 'empleador', 'border' ) );
+                $print( $v_tut, 'tutor', cdb_grafica_get_color_by_role( 'tutor', 'background' ), cdb_grafica_get_color_by_role( 'tutor', 'border' ) );
+              ?>
+            </span>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  <?php endforeach; ?>
+</div>
+<?php
+    return ob_get_clean();
+}
+
+add_filter(
+    'cdb_grafica_empleado_readonly_html',
+    function( $html, $empleado_id, $args = array() ) {
+        return cdb_grafica_build_empleado_readonly_html( $empleado_id, $args );
+    },
+    10,
+    3
+);
+
 // ------------------------------------------------------------------
 // 6. Procesar el envío del formulario "grafica_empleado_form".
 //    Repite las validaciones de rol y guarda o actualiza los datos
