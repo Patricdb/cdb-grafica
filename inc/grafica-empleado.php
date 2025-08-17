@@ -735,19 +735,14 @@ function cdb_grafica_build_empleado_readonly_html( $empleado_id, $args = array()
     }
 
     $criterios = cdb_get_criterios_empleado();
-    $grupos    = array();
+    $grupos = [];
     foreach ( $criterios as $grupo_nombre => $campos ) {
-        $slug       = strtok( $grupo_nombre, ' ' );
-        $campo_lbl  = $grupo_nombre;
-        if ( 1 === count( $campos ) ) {
-            $campo_lbl = reset( $campos )['label'];
-        }
-        $grupos[ $slug ] = array(
+        // etiqueta del header: si solo hay un campo, muestra su label; si no, el nombre completo
+        $campo_lbl = ( count( $campos ) === 1 ) ? reset( $campos )['label'] : $grupo_nombre;
+        $grupos[ $grupo_nombre ] = [
             'label'  => $grupo_nombre,
-            'campos' => array(
-                $slug => array( 'label' => $campo_lbl ),
-            ),
-        );
+            'campos' => [ $grupo_nombre => [ 'label' => $campo_lbl ] ],
+        ];
     }
 
     $scores      = cdb_grafica_get_scores_by_role( (int) $empleado_id, array( 'with_raw' => true ) );
@@ -767,6 +762,10 @@ function cdb_grafica_build_empleado_readonly_html( $empleado_id, $args = array()
         );
     }
 
+    $val = function( $x ) {
+        return ( $x === null || $x === '' ) ? '-' : number_format( (float) $x, 1 );
+    };
+
     $id = 'cdb-readonly-' . sanitize_key( $args['id_suffix'] ?? 'content' );
 
     ob_start();
@@ -774,35 +773,24 @@ function cdb_grafica_build_empleado_readonly_html( $empleado_id, $args = array()
 <div class="accordion cdb-readonly" id="<?php echo esc_attr( $id ); ?>">
   <?php if ( ! empty( $legend_html ) && ! empty( $args['show_legend'] ) ) echo $legend_html; ?>
 
-  <?php foreach ( $grupos as $grupo_slug => $grupo_data ): ?>
+  <?php foreach ( $grupos as $grupo_nombre => $grupo_data ): ?>
     <div class="accordion-item">
       <div class="accordion-header">
         <button class="accordion-toggle" type="button"><?php echo esc_html( $grupo_data['label'] ); ?></button>
       </div>
       <div class="accordion-content" style="display:none;">
         <?php foreach ( $grupo_data['campos'] as $campo_slug => $campo_info ): ?>
+          <?php
+            $v_emp   = $scores['raw']['empleado']['grupos'][ $grupo_nombre ]   ?? null;
+            $v_empdr = $scores['raw']['empleador']['grupos'][ $grupo_nombre ] ?? null;
+            $v_tutor = $scores['raw']['tutor']['grupos'][ $grupo_nombre ]     ?? null;
+          ?>
           <div class="cdb-readonly-row">
             <span class="cdb-readonly-label"><?php echo esc_html( $campo_info['label'] ); ?></span>
             <span class="cdb-score-pills">
-              <?php
-                $v_emp = $scores['raw']['empleado']['grupos'][ $campo_slug ] ?? '';
-                $v_jef = $scores['raw']['empleador']['grupos'][ $campo_slug ] ?? '';
-                $v_tut = $scores['raw']['tutor']['grupos'][ $campo_slug ] ?? '';
-                $print = function( $val, $role, $bg, $bd ) {
-                    $empty = ( '' === $val || null === $val );
-                    printf(
-                        '<span class="cdb-score-pill -%1$s%4$s" style="background:%2$s;border-color:%3$s">%5$s</span>',
-                        esc_attr( $role ),
-                        esc_attr( $bg ),
-                        esc_attr( $bd ),
-                        $empty ? ' is-empty' : '',
-                        $empty ? '&ndash;' : esc_html( $val )
-                    );
-                };
-                $print( $v_emp, 'emp', cdb_grafica_get_color_by_role( 'empleado', 'background' ), cdb_grafica_get_color_by_role( 'empleado', 'border' ) );
-                $print( $v_jef, 'boss', cdb_grafica_get_color_by_role( 'empleador', 'background' ), cdb_grafica_get_color_by_role( 'empleador', 'border' ) );
-                $print( $v_tut, 'tutor', cdb_grafica_get_color_by_role( 'tutor', 'background' ), cdb_grafica_get_color_by_role( 'tutor', 'border' ) );
-              ?>
+              <span class="cdb-score-pill role-emp<?php echo ( $v_emp === null ? ' is-empty' : '' ); ?>"><?php echo esc_html( $val( $v_emp ) ); ?></span>
+              <span class="cdb-score-pill role-empdr<?php echo ( $v_empdr === null ? ' is-empty' : '' ); ?>"><?php echo esc_html( $val( $v_empdr ) ); ?></span>
+              <span class="cdb-score-pill role-tutor<?php echo ( $v_tutor === null ? ' is-empty' : '' ); ?>"><?php echo esc_html( $val( $v_tutor ) ); ?></span>
             </span>
           </div>
         <?php endforeach; ?>
