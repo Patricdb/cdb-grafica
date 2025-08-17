@@ -3,16 +3,38 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.cdb-scores-legend {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin: 8px 0 12px;
+/* Header: respetar estado abierto desde JS */
+.accordion-header.open {
+  background-color: #000;
+  color: #fff;
 }
 
-.cdb-scores-legend .role i {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    display: inline-block;
+/* Consistencia de espacios */
+.accordion { margin: 16px 0; border:1px solid #cdb888; border-radius:10px; overflow:hidden; }
+.accordion-header { background:#FAF8EE; padding:12px 14px; cursor:pointer; border-bottom:1px solid #cdb888; font-weight:600; }
+.accordion-content { display:none; padding:12px 14px 14px; background:#FAF8EE; }
+
+/* Readonly: items con la misma cadencia visual que form */
+.cdb-readonly .accordion-item {
+  background:#FAF8EE;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  margin:0; /* se hereda el margen del contenedor principal */
 }
+.cdb-readonly .accordion-item:last-child { border-bottom:0; }
+
+/* Filas de readonly */
+.cdb-readonly-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; }
+.cdb-readonly-label{ font-weight:600; }
+
+/* Píldoras (medias por rol) */
+.cdb-score-pills{ display:flex; gap:8px; }
+.cdb-score-pill{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:2.6ch; height:1.9em; padding:0 .55ch; border-radius:6px;
+  font-weight:700; line-height:1; font-variant-numeric:tabular-nums; border:1px solid currentColor;
+}
+.cdb-score-pill.is-empty{ opacity:.75; }
+
+/* Leyenda compacta y alineada con card */
+.cdb-scores-legend{ display:flex; gap:12px; align-items:center; margin:8px 0 12px; }
+.cdb-scores-legend .role i{ width:12px; height:12px; border-radius:3px; display:inline-block; }
