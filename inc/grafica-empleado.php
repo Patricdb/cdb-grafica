@@ -673,14 +673,6 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
             <col class="col-empdr" style="width:20%">
             <col class="col-tutor" style="width:20%">
         </colgroup>
-        <thead>
-            <tr>
-                <th><?php esc_html_e( 'Criterio', 'cdb-grafica' ); ?></th>
-                <th><?php echo esc_html( cdb_empleado_plural_role( 'empleado' ) ); ?></th>
-                <th><?php echo esc_html( cdb_empleado_plural_role( 'empleador' ) ); ?></th>
-                <th><?php echo esc_html( cdb_empleado_plural_role( 'tutor' ) ); ?></th>
-            </tr>
-        </thead>
         <tbody>
         <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
             <tr class="group-header">
