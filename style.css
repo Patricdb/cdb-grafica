@@ -1,17 +1,24 @@
 /* Estilos para la tabla con acordeón */
 .accordion {
-    margin: 16px 0;
-    border:1px solid #e0d6b8;
-    border-radius:12px;
-    overflow:hidden;
+    margin: 1em 0; /* Margen superior e inferior */
+    border: 1px solid #cdb888;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 .accordion-header {
-    background:#FAF8EE;
-    padding:14px 16px;
-    cursor:pointer;
-    border-bottom:1px solid #e0d6b8;
-    font-weight:600;
+    background-color: #FAF8EE; /* Fondo blanco */
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #cdb888;
+    color: #000; /* Texto negro */
+    font-weight: bold;
+    border-radius: 5px; /* Bordes redondeados */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
+}
+
+.accordion-header:hover {
+    background-color: #cdb121; /* Fondo más oscuro al pasar el ratón */
 }
 
 .accordion-header .accordion-toggle {
@@ -27,9 +34,9 @@
 }
 
 .accordion-content {
-    display:none;
-    padding:14px 16px;
-    background:#FAF8EE;
+    display: none;
+    padding: 15px;
+    background-color: #FAF8EE; /* Fondo blanco */
 }
 
 .accordion-content label {
@@ -76,18 +83,12 @@ form {
     display: inline-block;
 }
 
-.cdb-readonly .accordion-item{
-    background:#FAF8EE;
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:12px;
-    margin:10px 0;
-}
+.cdb-readonly .accordion-item{ background:#faf7ef;border:1px solid rgba(0,0,0,.08);border-radius:10px;margin-bottom:10px; }
+.cdb-readonly .accordion-header{ padding:12px 14px; }
+.cdb-readonly .accordion-content{ padding:10px 14px 14px; }
 .cdb-readonly-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; }
 .cdb-readonly-label{ font-weight:600; }
 .cdb-score-pills{ display:flex; gap:8px; }
-.cdb-score-pill{ display:inline-flex; align-items:center; justify-content:center; min-width:3.2ch; height:2.0em; padding:0 .6ch; border-radius:7px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; border:1px solid currentColor; }
+.cdb-score-pill{ display:inline-flex; align-items:center; justify-content:center; min-width:2.6ch; height:1.9em; padding:0 .55ch; border-radius:6px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; border:1px solid currentColor; }
 .cdb-score-pill.is-empty{ opacity:.75; }
-.cdb-score-pill.role-emp{ color:#4bc0c0; }
-.cdb-score-pill.role-empdr{ color:#36a2eb; }
-.cdb-score-pill.role-tutor{ color:#ff6384; }
 @media (max-width:480px){ .cdb-readonly-row{ flex-wrap:wrap; } }

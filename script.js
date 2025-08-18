@@ -1,18 +1,16 @@
 jQuery(document).ready(function ($) {
-  $('.accordion-toggle').on('click', function () {
-    const accordion = $(this).closest('.accordion');
-    const header    = accordion.find('.accordion-header').first();
-    const content   = accordion.find('.accordion-content').first();
+    $('.accordion-toggle').on('click', function () {
+        const accordion = $(this).closest('.accordion');
+        const content = accordion.find('.accordion-content');
 
-    content.slideToggle(300);
-    $(this).toggleClass('open');
-    header.toggleClass('open');
+        // Alternar la visibilidad del contenido
+        content.slideToggle(300); // Animación de 300ms
 
-    // Si quieres cerrar los demás, descomenta:
-    // $('.accordion').not(accordion).each(function(){
-    //   $(this).find('.accordion-content').slideUp(300);
-    //   $(this).find('.accordion-toggle').removeClass('open');
-    //   $(this).find('.accordion-header').removeClass('open');
-    // });
-  });
+        // Cambiar clase para estilos de encabezado abierto/cerrado
+        $(this).toggleClass('open');
+
+        // Opcional: cerrar otros acordeones abiertos
+        // $('.accordion').not(accordion).find('.accordion-content').slideUp(300);
+        // $('.accordion').not(accordion).find('.accordion-toggle').removeClass('open');
+    });
 });
