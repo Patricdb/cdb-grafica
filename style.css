@@ -102,5 +102,11 @@ form {
 .cdb-scores-title { font-weight:700; text-align:left; margin-bottom:4px; }
 
 /* Estilos para la tabla de promedios */
-.cdb-grafica-scores .group-header th { font-weight:700; text-align:left; }
+.cdb-grafica-scores .group-header th {
+    background:#cdb121;
+    color:#000;
+    font-weight:700;
+    padding:.25em .5em;
+    text-align:left;
+}
 .cdb-grafica-scores .score-cell { text-align:center; }
