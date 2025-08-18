@@ -607,29 +607,35 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
     );
 
     $criterios = cdb_get_criterios_empleado();
-    $grupos    = [];
-    foreach ( $criterios as $grupo_nombre => $campos ) {
-        $grupos[ $grupo_nombre ] = array_keys( $campos );
-    }
+    $roles     = [ 'empleado', 'empleador', 'tutor' ];
 
-    $roles  = [ 'empleado', 'empleador', 'tutor' ];
-    $scores = [];
-    foreach ( $roles as $role ) {
-        foreach ( $grupos as $grupo_nombre => $campos ) {
-            $suma  = 0;
-            $count = 0;
-            foreach ( $results as $row ) {
-                if ( strtolower( $row->user_role ) !== $role ) {
-                    continue;
-                }
-                foreach ( $campos as $campo ) {
-                    if ( isset( $row->$campo ) && 0 != $row->$campo ) {
-                        $suma  += $row->$campo;
-                        $count++;
+    $totales = [];
+    foreach ( $results as $row ) {
+        $rol = strtolower( $row->user_role );
+        if ( ! in_array( $rol, $roles, true ) ) {
+            continue;
+        }
+        foreach ( $criterios as $grupo_campos ) {
+            foreach ( $grupo_campos as $campo_slug => $info ) {
+                if ( isset( $row->$campo_slug ) && 0 != $row->$campo_slug ) {
+                    if ( ! isset( $totales[ $rol ][ $campo_slug ] ) ) {
+                        $totales[ $rol ][ $campo_slug ] = [ 'suma' => 0, 'cuenta' => 0 ];
                     }
+                    $totales[ $rol ][ $campo_slug ]['suma']   += (float) $row->$campo_slug;
+                    $totales[ $rol ][ $campo_slug ]['cuenta'] += 1;
                 }
             }
-            $scores[ $role ][ $grupo_nombre ] = $count > 0 ? round( $suma / $count, 1 ) : '';
+        }
+    }
+
+    $scores = [];
+    foreach ( $roles as $rol ) {
+        foreach ( $criterios as $grupo_campos ) {
+            foreach ( $grupo_campos as $campo_slug => $info ) {
+                $suma   = $totales[ $rol ][ $campo_slug ]['suma'] ?? 0;
+                $cuenta = $totales[ $rol ][ $campo_slug ]['cuenta'] ?? 0;
+                $scores[ $rol ][ $campo_slug ] = $cuenta > 0 ? ( $suma / $cuenta ) : null;
+            }
         }
     }
 
@@ -649,15 +655,19 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         );
     }
 
+    $print_cell = static function ( $valor ) {
+        echo null !== $valor ? esc_html( round( (float) $valor, 1 ) ) : '–';
+    };
+
     ob_start();
     echo $legend_html; ?>
     <table class="cdb-grafica-scores">
-        <caption class="screen-reader-text"><?php esc_html_e( 'Tabla de calificaciones por criterio y rol', 'cdb-grafica' ); ?></caption>
+        <caption class="cdb-scores-title"><?php esc_html_e( 'Tus calificaciones:', 'cdb-grafica' ); ?></caption>
         <colgroup>
-            <col style="width:40%">
-            <col style="width:20%">
-            <col style="width:20%">
-            <col style="width:20%">
+            <col class="col-criterio" style="width:40%">
+            <col class="col-emp" style="width:20%">
+            <col class="col-empdr" style="width:20%">
+            <col class="col-tutor" style="width:20%">
         </colgroup>
         <thead>
             <tr>
@@ -668,13 +678,23 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
             </tr>
         </thead>
         <tbody>
-        <?php foreach ( $grupos as $grupo_nombre => $campos ) : ?>
-            <tr>
-                <th scope="row"><?php echo esc_html( $grupo_nombre ); ?></th>
-                <?php foreach ( $roles as $role ) : ?>
-                    <td class="is-numeric"><?php echo '' !== $scores[ $role ][ $grupo_nombre ] ? esc_html( $scores[ $role ][ $grupo_nombre ] ) : '-'; ?></td>
-                <?php endforeach; ?>
+        <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
+            <tr class="group-header">
+                <th colspan="4"><?php echo esc_html( $grupo_nombre ); ?></th>
             </tr>
+            <?php foreach ( $campos as $campo_slug => $info ) : ?>
+                <tr>
+                    <th scope="row">
+                        <?php echo esc_html( $info['label'] ); ?>
+                        <?php if ( ! empty( $info['descripcion'] ) ) : ?>
+                            <br><small><?php echo esc_html( $info['descripcion'] ); ?></small>
+                        <?php endif; ?>
+                    </th>
+                    <?php foreach ( $roles as $rol ) : ?>
+                        <td class="score-cell"><?php $print_cell( $scores[ $rol ][ $campo_slug ] ?? null ); ?></td>
+                    <?php endforeach; ?>
+                </tr>
+            <?php endforeach; ?>
         <?php endforeach; ?>
         </tbody>
     </table>

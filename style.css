@@ -92,3 +92,15 @@ form {
 .cdb-score-pill{ display:inline-flex; align-items:center; justify-content:center; min-width:2.6ch; height:1.9em; padding:0 .55ch; border-radius:6px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; border:1px solid currentColor; }
 .cdb-score-pill.is-empty{ opacity:.75; }
 @media (max-width:480px){ .cdb-readonly-row{ flex-wrap:wrap; } }
+
+/* Colores por columnas de la tabla de puntuaciones */
+.col-emp { background: var(--color-empleado); }
+.col-empdr { background: var(--color-empleador); }
+.col-tutor { background: var(--color-tutor); }
+
+/* Título de la tabla de calificaciones */
+.cdb-scores-title { font-weight:700; text-align:left; margin-bottom:4px; }
+
+/* Estilos para la tabla de promedios */
+.cdb-grafica-scores .group-header th { font-weight:700; text-align:left; }
+.cdb-grafica-scores .score-cell { text-align:center; }
