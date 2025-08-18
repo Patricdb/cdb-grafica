@@ -639,11 +639,12 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         }
     }
 
+    $c_emp   = cdb_grafica_get_color_by_role( 'empleado' );
+    $c_empdr = cdb_grafica_get_color_by_role( 'empleador' );
+    $c_tutor = cdb_grafica_get_color_by_role( 'tutor' );
+
     $legend_html = '';
     if ( $args['with_legend'] ) {
-        $c_emp   = cdb_grafica_get_color_by_role( 'empleado' );
-        $c_empdr = cdb_grafica_get_color_by_role( 'empleador' );
-        $c_tutor = cdb_grafica_get_color_by_role( 'tutor' );
         $legend_html = sprintf(
             '<div class="cdb-scores-legend"><span class="role role-emp"><i style="background:%1$s"></i> %2$s</span><span class="role role-empdr"><i style="background:%3$s"></i> %4$s</span><span class="role role-tutor"><i style="background:%5$s"></i> %6$s</span></div>',
             esc_attr( $c_emp ),
@@ -661,7 +662,10 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
 
     ob_start();
     echo $legend_html; ?>
-    <table class="cdb-grafica-scores">
+    <table class="cdb-grafica-scores"
+           style="--color-empleado:<?php echo esc_attr( $c_emp ); ?>;
+                  --color-empleador:<?php echo esc_attr( $c_empdr ); ?>;
+                  --color-tutor:<?php echo esc_attr( $c_tutor ); ?>;">
         <caption class="cdb-scores-title"><?php esc_html_e( 'Tus calificaciones:', 'cdb-grafica' ); ?></caption>
         <colgroup>
             <col class="col-criterio" style="width:40%">
