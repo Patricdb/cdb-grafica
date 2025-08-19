@@ -680,10 +680,10 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
             </tr>
             <?php foreach ( $campos as $campo_slug => $info ) : ?>
                 <tr>
-                    <th scope="row">
+                    <th scope="row" class="criterio-cell">
                         <?php echo esc_html( $info['label'] ); ?>
                         <?php if ( ! empty( $info['descripcion'] ) ) : ?>
-                            <br><small><?php echo esc_html( $info['descripcion'] ); ?></small>
+                            <small><?php echo esc_html( $info['descripcion'] ); ?></small>
                         <?php endif; ?>
                     </th>
                     <?php foreach ( $roles as $rol ) : ?>
