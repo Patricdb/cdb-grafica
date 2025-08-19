@@ -673,10 +673,10 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
             <col class="col-empdr" style="width:3ch">
             <col class="col-tutor" style="width:3ch">
         </colgroup>
-        <tbody>
         <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
+        <tbody class="grupo">
             <tr class="group-header">
-                <th colspan="4"><?php echo esc_html( $grupo_nombre ); ?></th>
+                <th colspan="4"><button class="group-toggle" type="button"><?php echo esc_html( $grupo_nombre ); ?></button></th>
             </tr>
             <?php foreach ( $campos as $campo_slug => $info ) : ?>
                 <tr>
@@ -691,8 +691,8 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
                     <?php endforeach; ?>
                 </tr>
             <?php endforeach; ?>
-        <?php endforeach; ?>
         </tbody>
+        <?php endforeach; ?>
     </table>
     <?php
     return ob_get_clean();
