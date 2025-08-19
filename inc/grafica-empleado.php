@@ -598,6 +598,17 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         );
     }
 
+    if ( ! wp_script_is( 'grafica-empleado-form-script', 'enqueued' ) ) {
+        $script_path = plugin_dir_path( dirname( __FILE__ ) ) . 'script.js';
+        wp_enqueue_script(
+            'grafica-empleado-form-script',
+            plugins_url( 'script.js', dirname( __FILE__ ) ),
+            [ 'jquery' ],
+            filemtime( $script_path ),
+            true
+        );
+    }
+
     $table_name = $wpdb->prefix . 'grafica_empleado_results';
     $results    = $wpdb->get_results(
         $wpdb->prepare(
