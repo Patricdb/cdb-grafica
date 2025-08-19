@@ -28,16 +28,14 @@
     text-align: left;
 }
 
-.accordion-header.open {
-    background-color: #000; /* Fondo negro cuando está abierto */
-    color: #fff; /* Texto blanco cuando está abierto */
-}
-
 .accordion-content {
     display: none;
     padding: 15px;
     background-color: #FAF8EE; /* Fondo blanco */
 }
+
+.accordion-item.open > .accordion-content { display: block; }
+.accordion-item.open > .accordion-header { background:#000; color:#fff; }
 
 .accordion-content label {
     display: block;

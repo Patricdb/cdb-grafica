@@ -795,7 +795,7 @@ function cdb_grafica_build_empleado_readonly_html( $empleado_id, $args = array()
       <div class="accordion-header">
         <button class="accordion-toggle" type="button"><?php echo esc_html( $grupo_data['label'] ); ?></button>
       </div>
-      <div class="accordion-content" style="display:none;">
+      <div class="accordion-content">
         <?php foreach ( $grupo_data['campos'] as $campo_slug => $campo_info ): ?>
           <div class="cdb-readonly-row">
             <span class="cdb-readonly-label"><?php echo esc_html( $campo_info['label'] ); ?></span>
