@@ -111,11 +111,22 @@ form {
     padding:.25em .5em;
 }
 
+.cdb-grafica-scores th.criterio-cell {
+    text-align:left;
+    padding-left:0;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.cdb-grafica-scores th.criterio-cell small { margin:2px 0 0; }
+
 .cdb-grafica-scores .group-header th {
     background:#cdb121;
     color:#000;
     font-weight:700;
     padding:.25em .5em;
+    padding-left:0;
     text-align:left;
 }
 .cdb-grafica-scores .score-cell { text-align:center; }
