@@ -13,4 +13,9 @@ jQuery(document).ready(function ($) {
         // $('.accordion').not(accordion).find('.accordion-content').slideUp(300);
         // $('.accordion').not(accordion).find('.accordion-toggle').removeClass('open');
     });
+
+    $('.cdb-grafica-scores .group-toggle').on('click', function(){
+        const section = $(this).closest('tbody');
+        section.toggleClass('is-open');
+    });
 });

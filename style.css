@@ -129,6 +129,15 @@ form {
     padding-left:0;
     text-align:left;
 }
+.cdb-grafica-scores .group-toggle {
+    all:unset;
+    display:block;
+    width:100%;
+    text-align:left;
+    cursor:pointer;
+}
+
+.cdb-grafica-scores tbody:not(.is-open) tr:not(.group-header) { display:none; }
 .cdb-grafica-scores .score-cell { text-align:center; }
 
 .cdb-grafica-scores .col-emp,
