@@ -130,3 +130,8 @@ form {
     text-align:left;
 }
 .cdb-grafica-scores .score-cell { text-align:center; }
+
+.cdb-grafica-scores .col-emp,
+.cdb-grafica-scores .col-empdr,
+.cdb-grafica-scores .col-tutor { width:3ch; }
+.cdb-grafica-scores .col-criterio { width:auto; }

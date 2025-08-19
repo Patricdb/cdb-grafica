@@ -668,10 +668,10 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
                   --color-tutor:<?php echo esc_attr( $c_tutor ); ?>;">
         <caption class="cdb-scores-title"><?php esc_html_e( 'Tus calificaciones:', 'cdb-grafica' ); ?></caption>
         <colgroup>
-            <col class="col-criterio" style="width:40%">
-            <col class="col-emp" style="width:20%">
-            <col class="col-empdr" style="width:20%">
-            <col class="col-tutor" style="width:20%">
+            <col class="col-criterio" style="width:auto">
+            <col class="col-emp" style="width:3ch">
+            <col class="col-empdr" style="width:3ch">
+            <col class="col-tutor" style="width:3ch">
         </colgroup>
         <tbody>
         <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
