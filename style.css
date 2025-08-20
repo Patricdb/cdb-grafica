@@ -134,18 +134,18 @@ form {
     text-align:left;
     cursor:pointer;
     position:relative;
-    padding-right:1.5em;
+    padding-left:1.5em;
 }
 
-.cdb-grafica-scores .group-toggle::after {
+.cdb-grafica-scores .group-toggle::before {
     content:"\25B6";
     position:absolute;
-    right:.4em;
+    left:.4em;
     top:50%;
     transform:translateY(-50%);
     transition:transform .2s;
 }
-.cdb-grafica-scores tbody.is-open .group-toggle::after {
+.cdb-grafica-scores tbody.is-open .group-toggle::before {
     transform:translateY(-50%) rotate(90deg);
 }
 
