@@ -33,6 +33,7 @@ require_once __DIR__ . '/inc/criterios-bar.php';
 require_once __DIR__ . '/inc/grafica-bar.php';
 require_once __DIR__ . '/inc/criterios-empleado.php';
 require_once __DIR__ . '/inc/grafica-empleado.php';
+require_once __DIR__ . '/inc/api-empleado.php';
 // require_once __DIR__ . '/inc/shared-functions.php';
 
 // Helpers públicos cargados tras inicializar plugins.
