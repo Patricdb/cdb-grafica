@@ -9,6 +9,7 @@ jQuery(document).ready(function ($) {
 
     $('.cdb-grafica-scores .group-toggle').on('click', function(){
         const section = $(this).closest('tbody');
-        section.toggleClass('is-open');
+        const isOpen = section.toggleClass('is-open').hasClass('is-open');
+        $(this).attr('aria-expanded', isOpen);
     });
 });

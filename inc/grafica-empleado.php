@@ -687,7 +687,11 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
         <tbody class="grupo">
             <tr class="group-header">
-                <th colspan="4"><button class="group-toggle" type="button"><?php echo esc_html( $grupo_nombre ); ?></button></th>
+                <th colspan="4">
+                    <button class="group-toggle" type="button" aria-expanded="false">
+                        <?php echo esc_html( $grupo_nombre ); ?>
+                    </button>
+                </th>
             </tr>
             <?php foreach ( $campos as $campo_slug => $info ) : ?>
                 <tr>
