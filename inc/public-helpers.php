@@ -206,8 +206,13 @@ add_action(
     function ( int $empleado_id ): void {
         $scores_key = apply_filters( 'cdb_grafica_transient_key', "cdbg_scores_{$empleado_id}", $empleado_id, 'scores' );
         $last_key   = apply_filters( 'cdb_grafica_transient_key', "cdbg_last_{$empleado_id}", $empleado_id, 'last' );
+        $etotal_key = apply_filters( 'cdb_grafica_transient_key', "cdbg_etotal_{$empleado_id}", $empleado_id, 'empleado_total' );
+        $eavgs_key  = apply_filters( 'cdb_grafica_transient_key', "cdbg_eavgs_{$empleado_id}", $empleado_id, 'empleado_group_avgs' );
+
         delete_transient( $scores_key );
         delete_transient( $last_key );
+        delete_transient( $etotal_key );
+        delete_transient( $eavgs_key );
     }
 );
 
