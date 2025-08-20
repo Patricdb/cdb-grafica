@@ -33,13 +33,15 @@ Al desinstalar el plugin se eliminan las tablas creadas para almacenar los resul
 
 ## API Pública
 
-El plugin expone dos helpers para que otros plugins (p.ej. `cdb-form`) puedan
-obtener información de las valoraciones de empleados sin replicar la lógica de
-las gráficas.
+El plugin expone varios helpers para que otros plugins (p.ej. `cdb-form`)
+puedan obtener información de las valoraciones de empleados sin replicar la
+lógica de las gráficas.
 
 ```php
 $scores = cdb_grafica_get_scores_by_role( $empleado_id );
 $ultima = cdb_grafica_get_last_rating_datetime( $empleado_id );
+$total  = cdb_grafica_get_empleado_total( $empleado_id );
+$grupos = cdb_grafica_get_empleado_group_avgs( $empleado_id );
 ```
 
 ### `cdb_grafica_get_scores_by_role( int $empleado_id, array $args = [] ): array`
@@ -55,6 +57,18 @@ redondeados a un decimal o `0.0` si no hay datos. Acepta los argumentos:
 Retorna la fecha/hora (`Y-m-d H:i:s`) de la última valoración registrada o
 `null` si no existen datos.
 
+### `cdb_grafica_get_empleado_total( int $empleado_id ): float`
+
+Devuelve el total de puntuación del empleado. El valor puede modificarse con el
+filtro `cdb_grafica_empleado_total`. El resultado se almacena en un transient
+cuya vida útil puede ajustarse mediante `cdb_grafica_scores_ttl`.
+
+### `cdb_grafica_get_empleado_group_avgs( int $empleado_id ): array`
+
+Retorna los promedios por grupo del empleado. Antes de ser cacheados se pueden
+ajustar con el filtro `cdb_grafica_empleado_group_avgs`. El TTL del transient se
+controla igualmente con `cdb_grafica_scores_ttl`.
+
 ### Transients y filtros
 
 - `cdb_grafica_scores_ttl` y `cdb_grafica_last_rating_ttl` permiten ajustar los
@@ -62,6 +76,8 @@ Retorna la fecha/hora (`Y-m-d H:i:s`) de la última valoración registrada o
 - `cdb_grafica_transient_key` filtra las claves usadas para almacenar los
   resultados (`cdbg_scores_{ID}` y `cdbg_last_{ID}`).
 - Otros filtros: `cdb_grafica_scores_args`, `cdb_grafica_last_rating_args`.
+- `cdb_grafica_empleado_total` y `cdb_grafica_empleado_group_avgs` permiten
+  modificar los resultados de esos helpers antes de ser cacheados.
 
 Tras guardar una valoración se ejecuta el hook `cdb_grafica_after_save`, que
 borra los transients anteriores.
