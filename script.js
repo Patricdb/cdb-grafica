@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
-    $('.accordion.cdb-readonly .accordion-toggle').on('click', function () {
-        const item = $(this).closest('.accordion-item');
+    $('.accordion .accordion-toggle').on('click', function () {
+        const item = $(this).closest('.accordion-item, .accordion');
         const content = item.find('> .accordion-content');
         content.slideToggle(300);            // sólo el grupo pulsado
         $(this).toggleClass('open');         // estilo para encabezado activo
