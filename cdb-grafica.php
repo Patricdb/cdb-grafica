@@ -39,6 +39,7 @@ require_once __DIR__ . '/inc/grafica-empleado.php';
 add_action( 'plugins_loaded', 'cdb_grafica_load_public_helpers' );
 function cdb_grafica_load_public_helpers(): void {
     require_once __DIR__ . '/inc/public-helpers.php';
+    require_once __DIR__ . '/inc/api-empleado.php';
 }
 
 
