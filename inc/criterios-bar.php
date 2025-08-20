@@ -3,6 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Obtiene los criterios de evaluación para bares.
+ *
+ * @return array Criterios organizados por grupo.
+ */
 function cdb_get_criterios_bar() {
     return [
         'DIB (Direccion)' => [
