@@ -24,6 +24,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string Contenido modificado.
  */
 function cdb_inyectar_formulario_y_grafica( $content ) {
+    if ( ! is_main_query() || ! in_the_loop() ) {
+        return $content;
+    }
+
     // Verificamos que se trate de una vista singular de "bar" o "empleado".
     if ( is_singular( array( 'bar', 'empleado' ) ) ) {
         $post_type = get_post_type();
@@ -34,8 +38,15 @@ function cdb_inyectar_formulario_y_grafica( $content ) {
             // Se deja inactivo el bloque oficial.
             $grafica = '';
         } elseif ( 'empleado' === $post_type ) {
-            // CPT Empleado: inyecta el formulario mediante el shortcode.
-            $formulario = do_shortcode( '[grafica_empleado_form]' );
+            // CPT Empleado: inyecta el formulario mediante el shortcode si no existe ya.
+            if (
+                has_shortcode( $content, 'grafica_empleado_form' ) ||
+                ( function_exists( 'has_block' ) && has_block( 'cdb/grafica-empleado-form', $content ) )
+            ) {
+                $formulario = '';
+            } else {
+                $formulario = do_shortcode( '[grafica_empleado_form]' );
+            }
             // Se deja inactivo el bloque oficial.
             $grafica = '';
         } else {
