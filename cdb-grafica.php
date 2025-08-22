@@ -34,7 +34,6 @@ require_once __DIR__ . '/inc/grafica-bar.php';
 require_once __DIR__ . '/inc/criterios-empleado.php';
 require_once __DIR__ . '/inc/grafica-empleado.php';
 require_once __DIR__ . '/inc/api-empleado.php';
-require_once __DIR__ . '/inc/shared-functions.php';
 
 // Helpers públicos cargados tras inicializar plugins.
 add_action( 'plugins_loaded', 'cdb_grafica_load_public_helpers' );
@@ -101,36 +100,3 @@ function cdb_obtener_grafica() {
 /**
  * Enqueue Chart.js only when a graph block or shortcode is present.
  */
-function cdb_grafica_enqueue_chartjs() {
-    if ( is_admin() ) {
-        return;
-    }
-
-    $enqueue = false;
-
-    if ( is_singular() ) {
-        global $post;
-        $content = $post ? $post->post_content : '';
-
-        if ( has_shortcode( $content, 'grafica_bar' ) || has_shortcode( $content, 'grafica_empleado' ) ) {
-            $enqueue = true;
-        }
-
-        if ( function_exists( 'has_block' ) ) {
-            if ( has_block( 'cdb/grafica-bar', $post ) || has_block( 'cdb/grafica-empleado', $post ) ) {
-                $enqueue = true;
-            }
-        }
-    }
-
-    if ( $enqueue ) {
-        wp_enqueue_script(
-            'chartjs',
-            'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js',
-            [],
-            '4.3.0',
-            false
-        );
-    }
-}
-add_action( 'wp_enqueue_scripts', 'cdb_grafica_enqueue_chartjs' );

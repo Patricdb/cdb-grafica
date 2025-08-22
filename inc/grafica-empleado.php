@@ -54,6 +54,62 @@ function registrar_bloque_grafica_empleado() {
 add_action('init', 'registrar_bloque_grafica_empleado');
 
 // ------------------------------------------------------------------
+// Assets y renderizado común
+// ------------------------------------------------------------------
+function cdb_grafica_enqueue_assets(): void {
+    $base_path = plugin_dir_path( dirname( __FILE__ ) );
+
+    if ( ! wp_style_is( 'cdb-grafica-style', 'enqueued' ) ) {
+        wp_enqueue_style(
+            'cdb-grafica-style',
+            plugins_url( 'style.css', dirname( __FILE__ ) ),
+            [],
+            filemtime( $base_path . 'style.css' )
+        );
+    }
+
+    if ( ! wp_script_is( 'cdb-grafica-script', 'enqueued' ) ) {
+        wp_enqueue_script(
+            'cdb-grafica-script',
+            plugins_url( 'script.js', dirname( __FILE__ ) ),
+            [ 'jquery' ],
+            filemtime( $base_path . 'script.js' ),
+            true
+        );
+    }
+
+    if ( ! wp_script_is( 'chartjs', 'enqueued' ) ) {
+        if ( ! wp_script_is( 'chartjs', 'registered' ) ) {
+            wp_register_script(
+                'chartjs',
+                'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js',
+                [],
+                '4.3.0',
+                false
+            );
+        }
+        wp_enqueue_script( 'chartjs' );
+    }
+
+    if ( ! has_action( 'wp_footer', 'generar_grafica_empleado_en_frontend' ) ) {
+        add_action( 'wp_footer', 'generar_grafica_empleado_en_frontend', 99 );
+    }
+}
+
+function cdb_grafica_empleado_render( int $empleado_id, array $attrs = [] ): string {
+    cdb_grafica_enqueue_assets();
+    return cdb_grafica_build_empleado_html( $empleado_id, $attrs );
+}
+
+function cdb_grafica_empleado_shortcode( $atts ): string {
+    $atts = shortcode_atts( [ 'id' => get_the_ID() ], $atts, 'cdb_grafica_empleado' );
+    $empleado_id = (int) $atts['id'];
+    unset( $atts['id'] );
+    return cdb_grafica_empleado_render( $empleado_id, $atts );
+}
+add_shortcode( 'cdb_grafica_empleado', 'cdb_grafica_empleado_shortcode' );
+
+// ------------------------------------------------------------------
 // 2. Construye el HTML de la gráfica para un empleado específico.
 // ------------------------------------------------------------------
 function cdb_grafica_build_empleado_html( int $empleado_id, array $attrs = [] ): string {
@@ -195,23 +251,6 @@ function cdb_grafica_build_empleado_html( int $empleado_id, array $attrs = [] ):
     $attrs['ticksColor']         = $opts['ticks_color'] ?? $defaults_colors['ticks_color'];
     $attrs['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults_colors['ticks_backdrop'];
 
-    if ( ! wp_script_is( 'chartjs', 'enqueued' ) ) {
-        if ( ! wp_script_is( 'chartjs', 'registered' ) ) {
-            wp_register_script(
-                'chartjs',
-                'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js',
-                [],
-                '4.3.0',
-                false
-            );
-        }
-        wp_enqueue_script( 'chartjs' );
-    }
-
-    if ( ! has_action( 'wp_footer', 'generar_grafica_empleado_en_frontend' ) ) {
-        add_action( 'wp_footer', 'generar_grafica_empleado_en_frontend', 99 );
-    }
-
     $div_id = 'grafica-empleado';
     if ( ! empty( $attrs['id_suffix'] ) ) {
         $div_id .= '-' . sanitize_key( $attrs['id_suffix'] );
@@ -235,7 +274,7 @@ function cdb_grafica_build_empleado_html( int $empleado_id, array $attrs = [] ):
 
 function renderizar_bloque_grafica_empleado( $attributes, $content ) {
     $empleado_id = get_the_ID();
-    return cdb_grafica_build_empleado_html( (int) $empleado_id, $attributes );
+    return cdb_grafica_empleado_render( (int) $empleado_id, $attributes );
 }
 
 add_filter(
@@ -244,7 +283,7 @@ add_filter(
         if ( ! $empleado_id ) {
             return $html;
         }
-        return cdb_grafica_build_empleado_html( (int) $empleado_id, (array) $attrs );
+        return cdb_grafica_empleado_render( (int) $empleado_id, (array) $attrs );
     },
     10,
     3
@@ -359,13 +398,7 @@ function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [
     $post_id = $empleado_id ? (int) $empleado_id : get_the_ID();
     $args    = wp_parse_args( (array) $args, [ 'embed_chart' => true ] );
 
-    $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
-    wp_enqueue_style(
-        'cdb-grafica-empleado-style',
-        plugins_url( 'style.css', dirname( __FILE__ ) ),
-        [],
-        filemtime( $style_path )
-    );
+    cdb_grafica_enqueue_assets();
 
     // Verificar permiso global
     if ( ! current_user_can( 'submit_grafica_empleado' ) ) {
@@ -489,15 +522,6 @@ function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [
     // Definir los nombres y descripciones de las características
     $grupos = cdb_get_criterios_empleado();
 
-    $script_form_path = plugin_dir_path( dirname( __FILE__ ) ) . 'script.js';
-    wp_enqueue_script(
-        'grafica-empleado-form-script',
-        plugins_url( 'script.js', dirname( __FILE__ ) ),
-        [ 'jquery' ],
-        filemtime( $script_form_path ),
-        true
-    );
-
     $embed_chart = apply_filters( 'cdb_grafica_empleado_form_embed_chart', ! empty( $args['embed_chart'] ), $post_id, $args );
 
     ob_start();
@@ -586,28 +610,8 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         return '';
     }
 
+    cdb_grafica_enqueue_assets();
     $args = wp_parse_args( $args, [ 'with_legend' => false ] );
-
-    if ( ! wp_style_is( 'cdb-grafica-empleado-style', 'enqueued' ) ) {
-        $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
-        wp_enqueue_style(
-            'cdb-grafica-empleado-style',
-            plugins_url( 'style.css', dirname( __FILE__ ) ),
-            [],
-            filemtime( $style_path )
-        );
-    }
-
-    if ( ! wp_script_is( 'grafica-empleado-form-script', 'enqueued' ) ) {
-        $script_path = plugin_dir_path( dirname( __FILE__ ) ) . 'script.js';
-        wp_enqueue_script(
-            'grafica-empleado-form-script',
-            plugins_url( 'script.js', dirname( __FILE__ ) ),
-            [ 'jquery' ],
-            filemtime( $script_path ),
-            true
-        );
-    }
 
     $table_name = $wpdb->prefix . 'grafica_empleado_results';
     $results    = $wpdb->get_results(
@@ -739,31 +743,12 @@ function cdb_grafica_build_empleado_readonly_html( $empleado_id, $args = array()
         return '';
     }
 
+    cdb_grafica_enqueue_assets();
+
     $args = wp_parse_args( (array) $args, array(
         'id_suffix'   => 'content',
         'show_legend' => true,
     ) );
-
-    if ( ! wp_style_is( 'cdb-grafica-empleado-style', 'enqueued' ) ) {
-        $style_path = plugin_dir_path( dirname( __FILE__ ) ) . 'style.css';
-        wp_enqueue_style(
-            'cdb-grafica-empleado-style',
-            plugins_url( 'style.css', dirname( __FILE__ ) ),
-            array(),
-            filemtime( $style_path )
-        );
-    }
-
-    if ( ! wp_script_is( 'grafica-empleado-form-script', 'enqueued' ) ) {
-        $script_path = plugin_dir_path( dirname( __FILE__ ) ) . 'script.js';
-        wp_enqueue_script(
-            'grafica-empleado-form-script',
-            plugins_url( 'script.js', dirname( __FILE__ ) ),
-            array( 'jquery' ),
-            filemtime( $script_path ),
-            true
-        );
-    }
 
     $criterios = cdb_get_criterios_empleado();
     $grupos    = array();
