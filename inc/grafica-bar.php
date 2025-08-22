@@ -54,6 +54,8 @@ function renderizar_bloque_grafica_bar($attributes, $content) {
     $table_name = $wpdb->prefix . 'grafica_bar_results';
     $post_id    = get_the_ID();
 
+    cdb_grafica_enqueue_assets();
+
     // Recuperar todas las experiencias para este bar desde wp_cdb_experiencia
 $results = $wpdb->get_results($wpdb->prepare("
     SELECT * FROM $table_name WHERE post_id = %d
@@ -291,21 +293,7 @@ add_shortcode('grafica_bar_form', function($atts) {
     $grupos = cdb_get_criterios_bar();
 
 // Encolar estilos y scripts (acordeón, etc.)
-    $style_path = plugin_dir_path(dirname(__FILE__)) . 'style.css';
-    wp_enqueue_style(
-        'cdb-grafica-bar-style',
-        plugins_url('style.css', dirname(__FILE__)),
-        [],
-        filemtime($style_path)
-    );
-    $script_form_path = plugin_dir_path(dirname(__FILE__)) . 'script.js';
-    wp_enqueue_script(
-        'grafica-bar-form-script',
-        plugins_url('script.js', dirname(__FILE__)),
-        ['jquery'],
-        filemtime($script_form_path),
-        true
-    );
+    cdb_grafica_enqueue_assets();
 
     ob_start();
 
