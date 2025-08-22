@@ -655,7 +655,7 @@ function cdb_grafica_build_empleado_form_html( int $empleado_id, array $args = [
     $embed_chart = apply_filters( 'cdb_grafica_empleado_form_embed_chart', ! empty( $args['embed_chart'] ), $post_id, $args );
 
     ob_start();
-    if ( $embed_chart && apply_filters( 'cdb_grafica/auto_render_empleado_chart', true ) ) {
+    if ( $embed_chart ) {
         echo apply_filters( 'cdb_grafica_empleado_html', '', $post_id, $args );
     }
     ?>
