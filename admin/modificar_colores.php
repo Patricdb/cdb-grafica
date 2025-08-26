@@ -2,19 +2,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-// Submenu page to modify graph colors
-function cdb_grafica_colores_menu() {
-    add_submenu_page(
-        'cdb_grafica_menu',
-        __( 'Configurar Colores', 'cdb-grafica' ),
-        __( 'Configurar Colores', 'cdb-grafica' ),
-        'manage_options',
-        'cdb_modificar_colores',
-        'cdb_grafica_colores_page'
-    );
-}
-add_action('admin_menu', 'cdb_grafica_colores_menu');
 
+// Renderiza la página de configuración de colores de la gráfica.
 function cdb_grafica_colores_page() {
     if (isset($_POST['cdb_grafica_colores_nonce']) && wp_verify_nonce($_POST['cdb_grafica_colores_nonce'], 'cdb_guardar_colores')) {
         $colores = [

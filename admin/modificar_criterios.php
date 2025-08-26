@@ -160,21 +160,7 @@ function cdb_grafica_build_snippet_notice( $grupo, $slug, $label, $desc, $visibl
     <?php
     return ob_get_clean();
 }
-// Agregar el menú principal del plugin en el panel de administración
-function cdb_grafica_menu() {
-    add_menu_page(
-        __( 'CdB Gráfica', 'cdb-grafica' ),
-        __( 'CdB Gráfica', 'cdb-grafica' ),
-        'manage_options',
-        'cdb_grafica_menu',
-        'cdb_grafica_dashboard_page',
-        'dashicons-chart-bar',
-        25
-    );
-}
-add_action('admin_menu', 'cdb_grafica_menu');
-
-// Función para renderizar la página principal de CdB Gráfica
+// Renderiza la página principal del menú de CdB Gráfica.
 function cdb_grafica_dashboard_page() {
     ?>
     <div class="wrap">
@@ -183,19 +169,6 @@ function cdb_grafica_dashboard_page() {
     </div>
     <?php
 }
-
-// Agregar la página de configuración en el menú de administración
-function cdb_grafica_modificar_criterios_menu() {
-    add_submenu_page(
-        'cdb_grafica_menu',
-        __( 'Modificar Criterios', 'cdb-grafica' ),
-        __( 'Modificar Criterios', 'cdb-grafica' ),
-        'manage_options',
-        'cdb_modificar_criterios',
-        'cdb_grafica_modificar_criterios_page'
-    );
-}
-add_action('admin_menu', 'cdb_grafica_modificar_criterios_menu');
 
 // Esta funcionalidad modifica archivos PHP en disco.
 // Solo los administradores deben utilizarla y las ediciones concurrentes
