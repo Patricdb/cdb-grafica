@@ -7,10 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Register the plugin's admin menu and submenus.
  */
 function cdb_grafica_register_admin_menu() {
+    $capability = apply_filters( 'cdb_grafica_admin_capability', 'manage_options' );
+
     add_menu_page(
         __( 'CdB Gráfica', 'cdb-grafica' ),
         __( 'CdB Gráfica', 'cdb-grafica' ),
-        'manage_options',
+        $capability,
         'cdb_grafica_menu',
         'cdb_grafica_dashboard_page',
         'dashicons-chart-bar',
@@ -21,7 +23,7 @@ function cdb_grafica_register_admin_menu() {
         'cdb_grafica_menu',
         __( 'Modificar Criterios', 'cdb-grafica' ),
         __( 'Modificar Criterios', 'cdb-grafica' ),
-        'manage_options',
+        $capability,
         'cdb_modificar_criterios',
         'cdb_grafica_modificar_criterios_page'
     );
@@ -30,7 +32,7 @@ function cdb_grafica_register_admin_menu() {
         'cdb_grafica_menu',
         __( 'Configurar Colores', 'cdb-grafica' ),
         __( 'Configurar Colores', 'cdb-grafica' ),
-        'manage_options',
+        $capability,
         'cdb_modificar_colores',
         'cdb_grafica_colores_page'
     );

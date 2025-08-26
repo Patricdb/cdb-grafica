@@ -81,3 +81,15 @@ controla igualmente con `cdb_grafica_scores_ttl`.
 
 Tras guardar una valoración se ejecuta el hook `cdb_grafica_after_save`, que
 borra los transients anteriores.
+
+### `cdb_grafica_admin_capability`
+
+Permite modificar la capacidad requerida para acceder al menú de administración
+del plugin. Por defecto es `manage_options`, pero otros plugins o temas pueden
+ajustarla según sus necesidades:
+
+```php
+add_filter( 'cdb_grafica_admin_capability', function () {
+    return 'edit_posts';
+} );
+```
