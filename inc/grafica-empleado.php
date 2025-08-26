@@ -251,6 +251,15 @@ function cdb_grafica_build_empleado_html( int $empleado_id, array $attrs = [] ):
     $attrs['ticksColor']         = $opts['ticks_color'] ?? $defaults_colors['ticks_color'];
     $attrs['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults_colors['ticks_backdrop'];
 
+    $style_defaults = [
+        'border_width'     => 2,
+        'legend_font_size' => 14,
+        'ticks_step'       => 1,
+        'ticks_min'        => 0,
+        'ticks_max'        => 10,
+    ];
+    $estilos = get_option( 'cdb_grafica_estilos', $style_defaults );
+
     $div_id = 'grafica-empleado';
     if ( ! empty( $attrs['id_suffix'] ) ) {
         $div_id .= '-' . sanitize_key( $attrs['id_suffix'] );
@@ -262,11 +271,16 @@ function cdb_grafica_build_empleado_html( int $empleado_id, array $attrs = [] ):
     ?>
     <div id="<?php echo esc_attr( $div_id ); ?>"<?php echo $class_attr . $style_attr; ?>
          data-valores="<?php echo esc_attr( wp_json_encode( $data ) ); ?>"
-         data-role-colors="<?php echo esc_attr( wp_json_encode( $role_colors ) ); ?>"
-         data-background-color="<?php echo esc_attr( $attrs['backgroundColor'] ); ?>"
-         data-border-color="<?php echo esc_attr( $attrs['borderColor'] ); ?>"
-         data-ticks-color="<?php echo esc_attr( $attrs['ticksColor'] ); ?>"
-         data-ticks-backdrop-color="<?php echo esc_attr( $attrs['ticksBackdropColor'] ); ?>">
+        data-role-colors="<?php echo esc_attr( wp_json_encode( $role_colors ) ); ?>"
+        data-background-color="<?php echo esc_attr( $attrs['backgroundColor'] ); ?>"
+        data-border-color="<?php echo esc_attr( $attrs['borderColor'] ); ?>"
+        data-border-width="<?php echo esc_attr( $estilos['border_width'] ); ?>"
+        data-legend-font="<?php echo esc_attr( $estilos['legend_font_size'] ); ?>"
+        data-ticks-color="<?php echo esc_attr( $attrs['ticksColor'] ); ?>"
+        data-ticks-backdrop-color="<?php echo esc_attr( $attrs['ticksBackdropColor'] ); ?>"
+        data-ticks-step="<?php echo esc_attr( $estilos['ticks_step'] ); ?>"
+        data-ticks-min="<?php echo esc_attr( $estilos['ticks_min'] ); ?>"
+        data-ticks-max="<?php echo esc_attr( $estilos['ticks_max'] ); ?>">
     </div>
     <?php
     return ob_get_clean();

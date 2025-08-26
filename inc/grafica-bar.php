@@ -121,14 +121,28 @@ $results = $wpdb->get_results($wpdb->prepare("
     $attributes['ticksColor']        = $opts['ticks_color'] ?? $defaults['ticks_color'];
     $attributes['ticksBackdropColor'] = $opts['ticks_backdrop'] ?? $defaults['ticks_backdrop'];
 
+    $style_defaults = [
+        'border_width'     => 2,
+        'legend_font_size' => 14,
+        'ticks_step'       => 1,
+        'ticks_min'        => 0,
+        'ticks_max'        => 10,
+    ];
+    $estilos = get_option( 'cdb_grafica_estilos', $style_defaults );
+
     ob_start();
     ?>
     <div id="grafica-bar"
          data-valores="<?php echo esc_attr(wp_json_encode($data)); ?>"
          data-background-color="<?php echo esc_attr($attributes['backgroundColor']); ?>"
          data-border-color="<?php echo esc_attr($attributes['borderColor']); ?>"
+         data-border-width="<?php echo esc_attr( $estilos['border_width'] ); ?>"
+         data-legend-font="<?php echo esc_attr( $estilos['legend_font_size'] ); ?>"
          data-ticks-color="<?php echo esc_attr($attributes['ticksColor']); ?>"
-         data-ticks-backdrop-color="<?php echo esc_attr($attributes['ticksBackdropColor']); ?>">
+         data-ticks-backdrop-color="<?php echo esc_attr($attributes['ticksBackdropColor']); ?>"
+         data-ticks-step="<?php echo esc_attr( $estilos['ticks_step'] ); ?>"
+         data-ticks-min="<?php echo esc_attr( $estilos['ticks_min'] ); ?>"
+         data-ticks-max="<?php echo esc_attr( $estilos['ticks_max'] ); ?>">
     </div>
     <?php
     return ob_get_clean();

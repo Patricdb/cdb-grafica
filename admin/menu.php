@@ -36,5 +36,14 @@ function cdb_grafica_register_admin_menu() {
         'cdb_modificar_colores',
         'cdb_grafica_colores_page'
     );
+
+    add_submenu_page(
+        'cdb_grafica_menu',
+        __( 'Configurar Estilos', 'cdb-grafica' ),
+        __( 'Configurar Estilos', 'cdb-grafica' ),
+        $capability,
+        'cdb_estilos_grafica',
+        'cdb_grafica_estilos_page'
+    );
 }
 add_action( 'admin_menu', 'cdb_grafica_register_admin_menu' );
