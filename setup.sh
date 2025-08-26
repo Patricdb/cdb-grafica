@@ -11,3 +11,10 @@ if [ -f package.json ]; then
     npm ci
     npm run build
 fi
+
+# Compilar archivos de traducción (.po -> .mo)
+if compgen -G "languages/*.po" > /dev/null; then
+    for po in languages/*.po; do
+        msgfmt "$po" -o "${po%.po}.mo"
+    done
+fi
