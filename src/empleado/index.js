@@ -32,6 +32,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (graficaEmpleadoElement && ctx) {
         const data = JSON.parse(graficaEmpleadoElement.dataset.valores);
         const colores = JSON.parse(graficaEmpleadoElement.dataset.roleColors || "{}");
+        const borderWidth = parseInt(graficaEmpleadoElement.dataset.borderWidth, 10) || 2;
+        const legendFont = parseInt(graficaEmpleadoElement.dataset.legendFont, 10) || 14;
+        const ticksStep = parseInt(graficaEmpleadoElement.dataset.ticksStep, 10) || 1;
+        const ticksMin = parseInt(graficaEmpleadoElement.dataset.ticksMin, 10) || 0;
+        const ticksMax = parseInt(graficaEmpleadoElement.dataset.ticksMax, 10) || 10;
 
         const chartData = {
             labels: data.labels,
@@ -46,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: dataset.data,
                     backgroundColor: cfg.background || "gray",
                     borderColor: cfg.border || "gray",
-                    borderWidth: 2,
+                    borderWidth: borderWidth,
                 });
             });
         }
@@ -59,16 +64,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 plugins: {
                     legend: {
                         display: true,
-                        labels: { font: { size: 14 } },
+                        labels: { font: { size: legendFont } },
                     },
                 },
                 scales: {
                     r: {
                         ticks: {
                             beginAtZero: true,
-                            stepSize: 1,
-                            max: 10,
-                            min: 0,
+                            stepSize: ticksStep,
+                            max: ticksMax,
+                            min: ticksMin,
                             color: graficaEmpleadoElement.dataset.ticksColor || '#666',
                             backdropColor: graficaEmpleadoElement.dataset.ticksBackdropColor || undefined,
                         },

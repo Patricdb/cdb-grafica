@@ -32,6 +32,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (graficaBarElement && ctx) {
         const data = JSON.parse(graficaBarElement.dataset.valores);
+        const borderWidth = parseInt(graficaBarElement.dataset.borderWidth, 10) || 2;
+        const legendFont = parseInt(graficaBarElement.dataset.legendFont, 10) || 14;
+        const ticksStep = parseInt(graficaBarElement.dataset.ticksStep, 10) || 1;
+        const ticksMin = parseInt(graficaBarElement.dataset.ticksMin, 10) || 0;
+        const ticksMax = parseInt(graficaBarElement.dataset.ticksMax, 10) || 10;
 
         const chartData = {
             labels: data.labels,
@@ -41,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: data.promedios,
                     backgroundColor: graficaBarElement.dataset.backgroundColor || "rgba(75, 192, 192, 0.2)",
                     borderColor: graficaBarElement.dataset.borderColor || "rgba(75, 192, 192, 1)",
-                    borderWidth: 2,
+                    borderWidth: borderWidth,
                 },
             ],
         };
@@ -54,16 +59,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 plugins: {
                     legend: {
                         display: true,
-                        labels: { font: { size: 14 } },
+                        labels: { font: { size: legendFont } },
                     },
                 },
                 scales: {
                     r: {
                         ticks: {
                             beginAtZero: true,
-                            stepSize: 1,
-                            max: 10,
-                            min: 0,
+                            stepSize: ticksStep,
+                            max: ticksMax,
+                            min: ticksMin,
                             color: graficaBarElement.dataset.ticksColor || '#666',
                             backdropColor: graficaBarElement.dataset.ticksBackdropColor || undefined,
                         },

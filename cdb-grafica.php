@@ -26,6 +26,7 @@ register_activation_hook(__FILE__, 'grafica_bar_create_table');
 register_activation_hook(__FILE__, 'grafica_empleado_create_table');
 require_once plugin_dir_path(__FILE__) . 'admin/modificar_criterios.php';
 require_once plugin_dir_path(__FILE__) . 'admin/modificar_colores.php';
+require_once plugin_dir_path(__FILE__) . 'admin/modificar_estilos_grafica.php';
 require_once __DIR__ . '/admin/menu.php';
 
 // Requerir archivos de CPT y gráficas
