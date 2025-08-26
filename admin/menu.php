@@ -45,5 +45,14 @@ function cdb_grafica_register_admin_menu() {
         'cdb_estilos_grafica',
         'cdb_grafica_estilos_page'
     );
+
+    add_submenu_page(
+        'cdb_grafica_menu',
+        __( 'Estilos de Interfaz', 'cdb-grafica' ),
+        __( 'Estilos de Interfaz', 'cdb-grafica' ),
+        $capability,
+        'cdb_estilos_interfaz',
+        'cdb_grafica_ui_page'
+    );
 }
 add_action( 'admin_menu', 'cdb_grafica_register_admin_menu' );
