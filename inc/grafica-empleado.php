@@ -68,6 +68,29 @@ function cdb_grafica_enqueue_assets(): void {
         );
     }
 
+    $ui_defaults = [
+        'accordion_bg'       => '#FAF8EE',
+        'accordion_border'   => '#cdb888',
+        'accordion_hover'    => '#cdb121',
+        'form_bg'            => '#FAF8EE',
+        'form_border'        => '#cdb888',
+        'table_header_bg'    => '#cdb121',
+        'table_header_color' => '#000000',
+        'font_family'        => 'Arial, sans-serif',
+    ];
+    $ui_estilos = wp_parse_args( get_option( 'cdb_grafica_ui_estilos', [] ), $ui_defaults );
+    $css  = ':root{';
+    $css .= '--cdb-accordion-bg:' . sanitize_hex_color( $ui_estilos['accordion_bg'] ) . ';';
+    $css .= '--cdb-accordion-border:' . sanitize_hex_color( $ui_estilos['accordion_border'] ) . ';';
+    $css .= '--cdb-accordion-hover:' . sanitize_hex_color( $ui_estilos['accordion_hover'] ) . ';';
+    $css .= '--cdb-form-bg:' . sanitize_hex_color( $ui_estilos['form_bg'] ) . ';';
+    $css .= '--cdb-form-border:' . sanitize_hex_color( $ui_estilos['form_border'] ) . ';';
+    $css .= '--cdb-table-header-bg:' . sanitize_hex_color( $ui_estilos['table_header_bg'] ) . ';';
+    $css .= '--cdb-table-header-color:' . sanitize_hex_color( $ui_estilos['table_header_color'] ) . ';';
+    $css .= '--cdb-font-family:' . sanitize_text_field( $ui_estilos['font_family'] ) . ';';
+    $css .= '}';
+    wp_add_inline_style( 'cdb-grafica-style', $css );
+
     if ( ! wp_script_is( 'cdb-grafica-script', 'enqueued' ) ) {
         wp_enqueue_script(
             'cdb-grafica-script',

@@ -1,6 +1,6 @@
 /* Estilos básicos del plugin CdB_grafica */
 body {
-    font-family: Arial, sans-serif;
+    font-family: var(--cdb-font-family, Arial, sans-serif);
 }
 
 .cdb-scores-legend {
