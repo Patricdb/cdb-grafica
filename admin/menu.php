@@ -16,7 +16,7 @@ function cdb_grafica_register_admin_menu() {
         'cdb_grafica_menu',
         'cdb_grafica_dashboard_page',
         'dashicons-chart-bar',
-        26
+        5
     );
 
     add_submenu_page(
