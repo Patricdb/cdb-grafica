@@ -725,14 +725,6 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
             <col class="col-empdr" style="width:3ch">
             <col class="col-tutor" style="width:3ch">
         </colgroup>
-        <thead>
-            <tr>
-                <th scope="col"></th>
-                <th scope="col"><?php esc_html_e( 'Empleados', 'cdb-grafica' ); ?></th>
-                <th scope="col"><?php esc_html_e( 'Empleadores', 'cdb-grafica' ); ?></th>
-                <th scope="col"><?php esc_html_e( 'Tutores', 'cdb-grafica' ); ?></th>
-            </tr>
-        </thead>
         <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
         <tbody class="grupo">
             <tr class="group-header">
