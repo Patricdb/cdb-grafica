@@ -691,6 +691,22 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         }
     }
 
+    $group_scores = [];
+    foreach ( $criterios as $grupo_nombre => $campos ) {
+        foreach ( $roles as $rol ) {
+            $suma   = 0;
+            $cuenta = 0;
+            foreach ( $campos as $campo_slug => $info ) {
+                $valor = $scores[ $rol ][ $campo_slug ] ?? null;
+                if ( null !== $valor ) {
+                    $suma += $valor;
+                    $cuenta++;
+                }
+            }
+            $group_scores[ $grupo_nombre ][ $rol ] = $cuenta > 0 ? ( $suma / $cuenta ) : null;
+        }
+    }
+
     $c_emp   = cdb_grafica_get_color_by_role( 'empleado' );
     $c_empdr = cdb_grafica_get_color_by_role( 'empleador' );
     $c_tutor = cdb_grafica_get_color_by_role( 'tutor' );
@@ -728,11 +744,14 @@ function cdb_grafica_build_empleado_scores_table_html( int $empleado_id, array $
         <?php foreach ( $criterios as $grupo_nombre => $campos ) : ?>
         <tbody class="grupo">
             <tr class="group-header">
-                <th colspan="4">
+                <th class="criterio-cell">
                     <button class="group-toggle" type="button" aria-expanded="false">
                         <?php echo esc_html( $grupo_nombre ); ?>
                     </button>
                 </th>
+                <?php foreach ( $roles as $rol ) : ?>
+                    <td class="score-cell"><?php $print_cell( $group_scores[ $grupo_nombre ][ $rol ] ?? null ); ?></td>
+                <?php endforeach; ?>
             </tr>
             <?php foreach ( $campos as $campo_slug => $info ) : ?>
                 <tr>

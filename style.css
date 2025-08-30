@@ -133,13 +133,19 @@ form {
 
 .cdb-grafica-scores th.criterio-cell small { margin:2px 0 0; }
 
-.cdb-grafica-scores .group-header th {
+.cdb-grafica-scores .group-header th,
+.cdb-grafica-scores .group-header td {
     background: var(--cdb-table-header-bg);
     color: var(--cdb-table-header-color);
     font-weight:700;
     padding:.25em .5em;
+}
+.cdb-grafica-scores .group-header th {
     padding-left:0;
     text-align:left;
+}
+.cdb-grafica-scores .group-header .score-cell {
+    text-align:center;
 }
 .cdb-grafica-scores .group-toggle {
     all:unset;
