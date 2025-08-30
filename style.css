@@ -141,6 +141,14 @@ form {
     padding-left:0;
     text-align:left;
 }
+.cdb-grafica-scores thead th {
+    background: var(--cdb-table-header-bg);
+    color: var(--cdb-table-header-color);
+    font-family: var(--cdb-font-family);
+    font-weight:700;
+    padding:.25em .5em;
+    text-align:center;
+}
 .cdb-grafica-scores .group-toggle {
     all:unset;
     display:block;
@@ -170,3 +178,11 @@ form {
 .cdb-grafica-scores .col-empdr,
 .cdb-grafica-scores .col-tutor { width:3ch; }
 .cdb-grafica-scores .col-criterio { width:auto; }
+
+@media (max-width: 600px) {
+    .cdb-grafica-scores thead th {
+        font-size:0.875rem;
+        padding:.2em .3em;
+        text-align:center;
+    }
+}
