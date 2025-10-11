@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: CDB Gráfica
+ * Plugin URI:  https://proyectocdb.es
  * Description: Plugin para manejar gráficas (bar y empleado) y sus tablas.
  * Version: 1.1.0
  * Author: CdB_
